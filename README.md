@@ -1,3 +1,22 @@
+For 200D.101 using [stm32doom](https://github.com/floppes/stm32doom)
+
+To compile:
+
+```
+cd platform/200D.101
+make clean && make -j32
+```
+With WIFI updater([WIP](https://github.com/coon42/drysh_tools)):
+```
+make clean && make CFLAG_USER='-DSSID=\"turtius\" -DPASS=\"turtius@123\" -DIP=\"192.168.100.13\"' -j32
+```
+Attributions:
+
+-[kitor](https://github.com/kitor) & names_are_hard: display code
+
+-[coon](https://github.com/coon42): wifi updater
+
+
 Magic Lantern
 =============
 
