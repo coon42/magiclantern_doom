@@ -4,8 +4,9 @@
  */
 
 #include "dryos.h"
+#include "bmp.h"
 #include "log-d678.h"
-
+#include "extfunctions.h"
 extern void dump_file(char* name, uint32_t addr, uint32_t size);
 extern void malloc_info(void);
 extern void sysmem_info(void);
@@ -16,21 +17,32 @@ static uint32_t disp_xres = 0;
 static uint8_t *disp_framebuf = NULL;
 static char *vram_next = NULL;
 static char *vram_current = NULL;
+extern void D_DoomMain (void);
 
 
 
 
 static void DUMP_ASM dump_task()
 {
+     while (!bmp_vram_raw())
     {
         msleep(100);
     }
+    msleep(10000);
+    uart_printf("Starting doom!");
+    D_DoomMain ();
+while (true)
+{
+uart_printf("Hello! I am in a error state so um yeah\n");
+msleep(1000);
+}
 
 }
 
 /* called before Canon's init_task */
 void boot_pre_init_task(void)
 {
+
 }
 
 /* called right after Canon's init_task, while their initialization continues in background */
