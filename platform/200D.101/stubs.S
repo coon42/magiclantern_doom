@@ -93,6 +93,7 @@ NSTUB(0xE00C5415,  GUI_Control)
 NSTUB(0xE04A7EF5,  SetGUIRequestMode)
 NSTUB(0xE00921DD,  gui_init_end)
 NSTUB(0xE00C526B,  gui_main_task)
+THUMB_FN(0xe04a044d, RefreshVrmsSurface) // "Call RefreshVrmsSurface"
 
 /** GUI timers **/
 NSTUB(0xE04B9A3B,  CancelTimer)            /* from error message */
@@ -121,6 +122,12 @@ NSTUB(    0x799C,  mpu_recv_ring_buffer_tail) // ring buffer index incremented i
 NSTUB(0xE11C7CF9,  vsnprintf)              /* called near dmstart; references "01234567", "0123456789", "0123456789abcdef" and "0123456789ABCDEF"; second arg is size; the one called by DebugMsg only knows %s */
 NSTUB(0xE04BDC5D,uart_printf)
 
+/** Graphics **/
+THUMB_FN(0xe01ef518,XimrExe)
+THUMB_FN(0xe0729b5e,OAE_PackerVgCreateImage);
+THUMB_FN(0xe0729ca8,OAE_PackerVgDrawImage);
+THUMB_FN(0xe0729dc8,OAE_PackerVgImageSubData);
+THUMB_FN(0xe0729fd6,OAE_vgTranslatex);
 // SJE unsure stuff: currently majority copied from 50D (I have roms for this),
 // or 100D (more modern, presumably sort of similar)
 //
