@@ -18,18 +18,21 @@ extern void ml_gui_main_task();
  int inited = 0;
 
 static void DUMP_ASM dump_task()
+static void DUMP_ASM task_doom()
 {
-     while (!bmp_vram_raw())
+
+    while (!bmp_vram_raw())
     {
         msleep(100);
     }
-    msleep(10000);
+    msleep(1000);
     uart_printf("Starting doom!");
-    D_DoomMain ();
-while (true)
-{
-uart_printf("Hello! I am in a error state so um yeah\n");
-msleep(1000);
+    D_DoomMain();
+    while (true)
+    {
+        //uart_printf("Hello! I am in a error state so um yeah\n");
+        msleep(1000);
+    }
 }
 
 }
