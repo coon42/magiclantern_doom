@@ -1,4 +1,4 @@
-// Emacs style mode select   -*- C++ -*- 
+// Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
 // $Id:$
@@ -76,12 +76,11 @@ int usemouse = 0;
 
 int vanilla_keyboard_mapping = true;
 
-
 typedef struct
 {
-	byte r;
-	byte g;
-	byte b;
+    byte r;
+    byte g;
+    byte b;
 } col_t;
 
 // Palette converted to RGB565
@@ -89,8 +88,6 @@ typedef struct
 static uint16_t rgb565_palette[256];
 
 // Last touch state
-
-
 
 // Last button state
 
@@ -118,14 +115,13 @@ void I_InitGraphics (void)
 	screenvisible = true;
 }
 
-void I_ShutdownGraphics (void)
+void I_ShutdownGraphics(void)
 {
-	Z_Free (I_VideoBuffer);
+    Z_Free(I_VideoBuffer);
 }
 
-void I_StartFrame (void)
+void I_StartFrame(void)
 {
-
 }
 
 void I_GetEvent (void)
@@ -225,15 +221,15 @@ uint8_t *bmp = bmp_vram_raw();
 //
 // I_ReadScreen
 //
-void I_ReadScreen (byte* scr)
+void I_ReadScreen(byte *scr)
 {
-    memcpy (scr, I_VideoBuffer, SCREENWIDTH * SCREENHEIGHT);
+    memcpy(scr, I_VideoBuffer, SCREENWIDTH * SCREENHEIGHT);
 }
 
 //
 // I_SetPalette
 //
-void I_SetPalette (byte* palette)
+void I_SetPalette(byte *palette)
 {
 	int i;
 	col_t* c;
@@ -252,7 +248,7 @@ void I_SetPalette (byte* palette)
 
 // Given an RGB value, find the closest matching palette index.
 
-int I_GetPaletteIndex (int r, int g, int b)
+int I_GetPaletteIndex(int r, int g, int b)
 {
     int best, best_diff, diff;
     int i;
@@ -286,38 +282,38 @@ int I_GetPaletteIndex (int r, int g, int b)
     return best;
 }
 
-void I_BeginRead (void)
+void I_BeginRead(void)
 {
 }
 
-void I_EndRead (void)
+void I_EndRead(void)
 {
 }
 
-void I_SetWindowTitle (char *title)
+void I_SetWindowTitle(char *title)
 {
 }
 
-void I_GraphicsCheckCommandLine (void)
+void I_GraphicsCheckCommandLine(void)
 {
 }
 
-void I_SetGrabMouseCallback (grabmouse_callback_t func)
+void I_SetGrabMouseCallback(grabmouse_callback_t func)
 {
 }
 
-void I_EnableLoadingDisk (void)
+void I_EnableLoadingDisk(void)
 {
 }
 
-void I_BindVideoVariables (void)
+void I_BindVideoVariables(void)
 {
 }
 
-void I_DisplayFPSDots (boolean dots_on)
+void I_DisplayFPSDots(boolean dots_on)
 {
 }
 
-void I_CheckIsScreensaver (void)
+void I_CheckIsScreensaver(void)
 {
 }
