@@ -25,7 +25,6 @@
 #include "extfunctions.h"
 #include "dryos.h"
 
-
 #ifdef ORIGCODE
 
 //

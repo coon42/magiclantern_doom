@@ -89,4 +89,4 @@ void disp_set_pixel(int x, int y, int c)
 
 #endif
 
-void ml_assert_handler(char* msg, char* file, int line, const char* func) { };
+void ml_assert_handler(char *msg, char *file, int line, const char *func){};
