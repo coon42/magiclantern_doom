@@ -98,7 +98,7 @@ int  I_GetTime (void)
 {
     uint32_t ticks;
     
-    ticks = MEM(0xD400000C)/1000; //turtius: implement systime
+    ticks = MEM(TIMER)/1000; //turtius: not for other models
     if (basetime == 0)
         basetime = ticks;
 
@@ -115,7 +115,7 @@ int I_GetTimeMS(void)
 {
     uint32_t ticks;
 
-    ticks = MEM(0xD400000C)/1000; //turtius: implement systime
+    ticks = MEM(TIMER)/1000; //turtius: not for other models
     if (basetime == 0)
         basetime = ticks;
 
