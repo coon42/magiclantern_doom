@@ -31,13 +31,20 @@ rcsid[] = "$Id: i_x.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
 #include "d_event.h"
 #include "d_main.h"
 #include "i_video.h"
+#include "i_scale.h"
 #include "z_zone.h"
 
 #include "tables.h"
 #include "doomkeys.h"
 #include "bmp.h"
+#include "dryos.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "extfunctions.h"
+#include "w_wad.h"
+#include "deh_str.h"
+
+extern void XimrExe(int a);
 
 // The screen buffer; this is modified to draw things to the screen
 
@@ -51,6 +58,15 @@ boolean screensaver_mode = false;
 // when the screen isnt visible, don't render the screen
 
 boolean screenvisible;
+
+//buttons mappings for camera
+//Final array size must be a even number which isfollowed by a Unpress keyevent and a Press keyevent
+// Unpress Press Unpress Press Unpress Press..
+int buttonEvents[] = {BGMT_Q_SET_UNPRESS, BGMT_Q_SET, BGMT_UNPRESS_UP, BGMT_PRESS_UP, BGMT_UNPRESS_DOWN, BGMT_PRESS_DOWN, BGMT_UNPRESS_LEFT, BGMT_PRESS_LEFT, BGMT_UNPRESS_RIGHT, BGMT_PRESS_RIGHT};
+int buttonMap[] = {KEY_FIRE, KEY_UPARROW, KEY_DOWNARROW, KEY_LEFTARROW, KEY_RIGHTARROW};
+
+int pushbuttonEvents[] = {BGMT_PLAY, BGMT_MENU, BGMT_INFO};
+int pushbuttonMap[] = {KEY_ENTER, KEY_ESCAPE, 'y'};
 
 // Mouse acceleration
 //
@@ -69,7 +85,7 @@ int mouse_threshold = 10;
 int usegamma = 0;
 
 int usemouse = 0;
-
+extern int *global_next_weapon;
 // If true, keyboard mapping is ignored, like in Vanilla Doom.
 // The sensible thing to do is to disable this if you have a non-US
 // keyboard.
@@ -83,9 +99,9 @@ typedef struct
     byte b;
 } col_t;
 
-// Palette converted to RGB565
+// Palette converted to RGB32
 
-static uint16_t rgb565_palette[256];
+static uint32_t rgb32_palette[256];
 
 // Last touch state
 
@@ -106,13 +122,12 @@ struct marv
     uint32_t height;       // Y resolution; may be larger than screen size
     uint32_t pmem;         // pointer to PMEM (Permanent Memory) structure
 };
-void I_InitGraphics (void)
+unsigned int handle;
+void I_InitGraphics(void)
 {
-	
 
-	I_VideoBuffer = (byte*)Z_Malloc (SCREENWIDTH * SCREENHEIGHT, PU_STATIC, NULL);
-
-	screenvisible = true;
+    I_VideoBuffer = (byte *)Z_Malloc(SCREENWIDTH * SCREENHEIGHT, PU_STATIC, NULL);
+    screenvisible = true;
 }
 
 void I_ShutdownGraphics(void)
@@ -123,99 +138,206 @@ void I_ShutdownGraphics(void)
 void I_StartFrame(void)
 {
 }
-
-void I_GetEvent (void)
+extern inited;
+struct gui_main_struct
 {
-	event_t event;
-	bool button_state;
-
-	button_state = 1; //turtius: implement button reads
-
-	if (last_button_state != button_state)
-	{
-		last_button_state = button_state;
-
-		event.type = last_button_state ? ev_keydown : ev_keyup;
-		event.data1 = KEY_FIRE;
-		event.data2 = -1;
-		event.data3 = -1;
-
-		D_PostEvent (&event);
-	}
-
-}
-
-void I_StartTic (void)
+    void *obj; // off_0x00;
+    uint32_t counter_550d;
+    uint32_t off_0x08;
+    uint32_t counter; // off_0x0c;
+    uint32_t off_0x10;
+    uint32_t off_0x14;
+    uint32_t off_0x18;
+    uint32_t off_0x1c;
+    uint32_t off_0x20;
+    uint32_t off_0x24;
+    uint32_t off_0x28;
+    uint32_t off_0x2c;
+    struct msg_queue *msg_queue;      // off_0x30;
+    struct msg_queue *off_0x34;       // off_0x34;
+    struct msg_queue *msg_queue_550d; // off_0x38;
+    uint32_t off_0x3c;
+};
+extern struct gui_main_struct gui_main_struct;
+void ml_gui_main_task()
 {
-	I_GetEvent();
-}
+    gui_init_end();
+    struct event *event = NULL;
+    event_t Doomevent;
+    int index = 0;
+    void *funcs[GMT_NFUNCS];
+    memcpy(funcs, (void *)GMT_FUNCTABLE, 4 * GMT_NFUNCS);
 
-void I_UpdateNoBlit (void)
-{
-}
-static uint32_t rgb2yuv422(uint8_t r, uint8_t g, uint8_t b)
-{
-    float R = r;
-    float G = g;
-    float B = b;
-    float Y, U, V;
-    uint8_t y, u, v;
+    gui_init_end(); // no params?
 
-    Y = R * .299000 + G * .587000 + B * .114000;
-    U = R * -.168736 + G * -.331264 + B * .500000 + 128;
-    V = R * .500000 + G * -.418688 + B * -.081312 + 128;
-
-    y = Y;
-    u = U;
-    v = V;
-
-    return (u << 24) | (y << 16) | (v << 8) | y;
-}
-void I_FinishUpdate (void)
-{
-	int x, y;
-	byte index;
-
-
-
-	for (y = 0; y < SCREENHEIGHT; y++)
-	{
-		for (x = 0; x < SCREENWIDTH; x++)
-		{
-			index = I_VideoBuffer[y * SCREENWIDTH + x];
-uint8_t *bmp = bmp_vram_raw();
-
-    struct marv *marv = bmp_marv();
-
-    // UYVY display, must convert
-    //uint32_t color = 0xFFFFFFFF;
-    uint32_t uyvy = rgb2yuv422(index >> 24,
-                               (index >> 16) & 0xff,
-                              (index >> 8) & 0xff);
-     // uint32_t uyvy = rgb2yuv422(index);
-    uint8_t alpha =  0xff;
-
-    if (marv->opacity_data)
+    while (1)
     {
-        // 80D, 200D
-        // adapted from names_are_hard, https://pastebin.com/Vt84t4z1
-        uint32_t *offset = (uint32_t *)&bmp[(x & ~1) * 2 + y * 2 * marv->width];
-        if (x % 2)
+#if defined(CONFIG_550D) || defined(CONFIG_7D)
+        msg_queue_receive(gui_main_struct.msg_queue_550d, &event, 0);
+        gui_main_struct.counter_550d--;
+#else
+        msg_queue_receive(gui_main_struct.msg_queue, &event, 0);
+        gui_main_struct.counter--;
+#endif
+
+        if (event == NULL)
         {
-            // set U, Y2, V, keep Y1
-            *offset = (*offset & 0x0000FF00) | (uyvy & 0xFFFF00FF);
+            continue;
         }
-        else
+
+        index = event->type;
+        if (inited)
         {
-            // set U, Y1, V, keep Y2
-            *offset = (*offset & 0xFF000000) | (uyvy & 0x00FFFFFF);
+
+            //uart_printf("// ML button/event handler EVENT: 0x%x TYPE:0x%x\n", event->param, event->type);
+            //ignore any GUI_Control options. is it save?
+            if (event->type == 1)
+            {
+                //uart_printf("// ML button/event handler EVENT: 0x%x TYPE:0x%x\n", event->param, event->type);
+                continue;
+            }
+
+            if (event->type == 0)
+            {
+                //uart_printf("// ML button/event handler EVENT: 0x%x TYPE:0x%x\n", event->param, event->type);
+                for (int index = 0; index < sizeof(buttonEvents) / sizeof(int); index++)
+                {
+                    if (event->param == buttonEvents[index])
+                    {
+                        if (index % 2)
+                        {
+                            //uart_printf("Keydown! 0x%x DoomEvent:0x%x\n",buttonEvents[index-1],buttonMap[(index) >> 1]);
+                            Doomevent.type = ev_keydown;
+                            Doomevent.data1 = buttonMap[(index) >> 1];
+                            Doomevent.data2 = -1;
+                            Doomevent.data3 = -1;
+                            D_PostEvent(&Doomevent);
+                            continue;
+                        }
+                        else
+                        {
+                            // uart_printf("Keyup! 0x%x Index:0x%x\n",buttonEvents[index],(index) >> 1);
+                            Doomevent.type = ev_keyup;
+                            Doomevent.data1 = buttonMap[(index) >> 1];
+                            Doomevent.data2 = -1;
+                            Doomevent.data3 = -1;
+                            D_PostEvent(&Doomevent);
+                            continue;
+                        }
+                    }
+                }
+                for (int index = 0; index < sizeof(pushbuttonEvents) / sizeof(int); index++)
+                {
+                    if (event->param == pushbuttonEvents[index])
+                    {
+                        //uart_printf(" 0x%x Index:0x%x\n",pushbuttonEvents[index], pushbuttonMap[index]);
+                        Doomevent.type = ev_keydown;
+                        Doomevent.data1 = pushbuttonMap[index];
+                        Doomevent.data2 = -1;
+                        Doomevent.data3 = -1;
+                        D_PostEvent(&Doomevent);
+                        continue;
+                    }
+                }
+                // special case for incrementing weapons
+                if (event->param == BGMT_WHEEL)
+                {
+                    if (global_next_weapon)
+                    {
+                        if (screenvisible)
+                        {
+                            *global_next_weapon = 1;
+                        }
+                    }
+                    continue;
+                }
+                // most buttons are mapped are in this range (0x30 to 0x62) so this if statement avoids them getting passed to the GUI
+                if (event->param <= 0x30 || event->param >= 0x60)
+                {
+
+                    continue;
+                }
+            }
+            else
+            {
+            }
         }
-        marv->opacity_data[x + y * marv->width] = alpha;
+        if (IS_FAKE(event))
+        {
+            event->arg = 0; /* do not pass the "fake" flag to Canon code */
+        }
+
+        if (event->type == 0 && event->param < 0)
+        {
+            continue; /* do not pass internal ML events to Canon code */
+        }
+
+        if ((index >= GMT_NFUNCS) || (index < 0))
+        {
+            continue;
+        }
+
+        void (*f)(struct event *) = funcs[index];
+        f(event);
     }
-			//((uint16_t*)lcd_frame_buffer)[x * GFX_MAX_WIDTH + (GFX_MAX_WIDTH - y - 1)] = rgb565_palette[index];
-			//turtius: fix drawing routines 
-		}
-	}
+}
+void I_GetEvent(void)
+{
+}
+
+void I_StartTic(void)
+{
+    I_GetEvent();
+}
+
+void I_UpdateNoBlit(void)
+{
+}
+
+
+
+//7% increese in speed with unrolling
+//TODO: find a better way to refill the VRAM buffer
+//send help now this is too bad
+void I_FinishUpdate(void)
+{
+    struct MARV *rgb_MARV = MEM(0xfd80);
+    uint32_t *b = rgb_MARV->bitmap_data;
+
+    const int src_w = 320;
+    const int src_h = 200;
+    const int dst_x = 160;
+    const int dst_y = 70;
+    const int out_w = 960;
+    int src_y = 0;
+
+    //value to go from row+0 end to row+2 start
+    const int row_ofsfet = out_w-src_w-src_w;
+
+    //two pointers to draw 2 rows at once
+    uint32_t *row1 = b + out_w*(dst_y) + dst_x;
+    uint32_t *row2 = b + out_w*(dst_y+1) + dst_x;
+
+    //to reduce lookups per loop
+    uint32_t color = 0;
+    for (int i = 0; i < src_h; i++)
+    {
+        src_y = i * src_w;
+        for(int j = 0; j < src_w; j++){
+            //compute color once
+            color = rgb32_palette[I_VideoBuffer[src_y + j]];
+            //draw twice in each row
+            *row1++ = color;
+            *row1++ = color;
+            *row2++ = color;
+            *row2++ = color;
+          }
+        //move each pointer by two rows
+        row1 = row1 + out_w + row_ofsfet;
+        row2 = row2 + out_w + row_ofsfet;
+    }
+
+    XimrExe(0xA09A0);
 }
 
 //
@@ -231,19 +353,19 @@ void I_ReadScreen(byte *scr)
 //
 void I_SetPalette(byte *palette)
 {
-	int i;
-	col_t* c;
+    int i;
+    col_t *c;
 
-	for (i = 0; i < 256; i++)
-	{
-		c = (col_t*)palette;
-
-		//rgb565_palette[i] = GFX_RGB565(gammatable[usegamma][c->r],
-		//							   gammatable[usegamma][c->g],
-		//							   gammatable[usegamma][c->b]);
+    for (i = 0; i < 256; i++)
+    {
+        c = (col_t *)palette;
+        rgb32_palette[i] = (gammatable[usegamma][c->b] & 0xff) | (gammatable[usegamma][c->g] << 8) | (gammatable[usegamma][c->r] << 16) | (0xff << 24);
+        //rgb565_palette[i] = GFX_RGB565(gammatable[usegamma][c->r],
+        //							   gammatable[usegamma][c->g],
+        //							   gammatable[usegamma][c->b]);
         //turtius: fix this
-		palette += 3;
-	}
+        palette += 3;
+    }
 }
 
 // Given an RGB value, find the closest matching palette index.
@@ -259,13 +381,11 @@ int I_GetPaletteIndex(int r, int g, int b)
 
     for (i = 0; i < 256; ++i)
     {
-    	//color.r = GFX_RGB565_R(rgb565_palette[i]);
-    //	color.g = GFX_RGB565_G(rgb565_palette[i]);
-    //	color.b = GFX_RGB565_B(rgb565_palette[i]);
-//turtius: fix this
-        diff = (r - color.r) * (r - color.r)
-             + (g - color.g) * (g - color.g)
-             + (b - color.b) * (b - color.b);
+        color.b = rgb32_palette[i] & 0xff;
+        color.g = (rgb32_palette[i] >> 8) & 0xff;
+        color.r = (rgb32_palette[i] >> 16) & 0xff;
+        //turtius: fix this
+        diff = (r - color.r) * (r - color.r) + (g - color.g) * (g - color.g) + (b - color.b) * (b - color.b);
 
         if (diff < best_diff)
         {
