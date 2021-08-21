@@ -71,10 +71,11 @@ void boot_pre_init_task(void)
 /* called right after Canon's init_task, while their initialization continues in background */
 void boot_post_init_task(void)
 {
-
+    //MEM(0x115d8) = (int)&uart_printf | 1;
+    //MEM(0x115e4) =  (int)&uart_printf | 1;
     msleep(1000);
-
-    task_create("dump", 0x1e, 0x1000, dump_task, 0 );
+    inited = 1;
+    task_create("DOOM", 0x1f, 0x1000, task_doom, 0);
 }
 
 /* used by font_draw */
