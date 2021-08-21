@@ -140,7 +140,7 @@ NSTUB(0xe023ccc7,  is_taskid_valid) // probably wrong
 NSTUB(    0x4ea4,  dm_names) // in DebugMsg, before the 1st loop target
 NSTUB(   0x1fd7c,  sd_device) // in sdReadBlk, probably 0xe02b6fa2.  Lots of refs
                               // to 0x1fd7c, some to 0x1fd80
-NSTUB(    0x4844,  gui_main_struct) // in gui_main_task, 0xe00c527c, load reg after bl gui_init_end
+NSTUB(    0x4838,  gui_main_struct) // in gui_main_task, 0xe00c527c, load reg after bl gui_init_end
                                     // or possibly 0x4838 - this looks to be the start of the struct
 NSTUB(0xe00c54ab,  GUI_ChangeMode) // "GUI_ChangeMode:%d" string
 NSTUB(0xe04b907d,  DispSensorStart) // 0xe794 looks to be a bool for whether Sensor is started
@@ -163,7 +163,7 @@ NSTUB(0xe04ba3d5,  GetMemoryAddressOfMemoryChunk)           // AJ_PackMemory_Pac
 NSTUB(0xe062df0a,  AllocateMemoryResource)                  // m_pfAllocMemoryCBR, this function takes 4 params in 200D, 3 for 50D
 NSTUB(0xe062df38,  AllocateContinuousMemoryResource)        // m_pfContAllocMemoryCBR, takes 4 params now, 3 for 50D
 NSTUB(0xe062dfde,  FreeMemoryResource)                      // m_pfFreeMemoryCBR
-NSTUB(0xdf00b1d8,  msg_queue_receive) // "SystemIF::KerQueue.c" useful for finding some of these msg_ functions
+NSTUB(0xDF00B1D9,  msg_queue_receive) // "SystemIF::KerQueue.c" useful for finding some of these msg_ functions
 NSTUB(0xdf00b26b,  msg_queue_post)
 NSTUB(0xdf00b17d,  msg_queue_count) // Above "!!!!!!! QUE Overflo" - maybe 0xdf00b17c.  Not sure here,
                                     // params looks weird but I think decompilation may have confused
