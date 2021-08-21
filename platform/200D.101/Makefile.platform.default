@@ -25,7 +25,7 @@ SRC      = $(addprefix ../../src/$(DOOMDIR)/,$(SRC_DOOM))
 ifeq ($(ML_SRC_PROFILE),generic)
 ML_SRC_PROFILE  = minimal
 ML_MINIMAL_OBJ  = minimal-d678.o 
-ML_SRC_EXTRA_OBJS += fio-ml.o stdio.o  posix.o rand.o $(SRC:.c=.o) function_overrides.o
+ML_SRC_EXTRA_OBJS += fio-ml.o stdio.o  posix.o rand.o $(SRC:.c=.o) function_overrides.o ../../src/ml_update/ml_update.o 
 
 endif
 
