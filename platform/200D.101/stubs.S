@@ -128,6 +128,10 @@ THUMB_FN(0xe0729b5e,OAE_PackerVgCreateImage);
 THUMB_FN(0xe0729ca8,OAE_PackerVgDrawImage);
 THUMB_FN(0xe0729dc8,OAE_PackerVgImageSubData);
 THUMB_FN(0xe0729fd6,OAE_vgTranslatex);
+
+/* Prop */
+THUMB_FN(0xe04bb5ac,_prop_request_change)
+
 // SJE unsure stuff: currently majority copied from 50D (I have roms for this),
 // or 100D (more modern, presumably sort of similar)
 //
@@ -233,7 +237,7 @@ NSTUB(   0xfd84,  bmp_vram_info) // function e04a044c looks relevant, see refs t
 
 NSTUB(   0x242C0,  LCD_Palette) // in InitializeBitmapDisplayDevice, right after 0xc0f14800
 //NSTUB(    0x30F8,  task_max)
-//NSTUB(    0x1934,  task_dispatch_hook)
+NSTUB(    0x0000412c,  task_dispatch_hook)
 //NSTUB(    0x3960,  gui_timer_struct) // in GUI_Control_Post
 //NSTUB(    0x7674,  mvr_config)
 //NSTUB(0xC0220000,  camera_engine)
@@ -246,7 +250,7 @@ NSTUB(    0xFF3C,  additional_version)
 //NSTUB(0xFF8598C4, _prop_request_change)
 //NSTUB(0xFF85E90C,  EnableImagePhysicalScreenParameter)
 //NSTUB(0xFF863E5C,  dm_set_store_level) // called by "dmstore"
-//NSTUB(0xFF86F990,  task_trampoline)
+ NSTUB(0xdf00325d,  task_trampoline)
 //NSTUB(0xFF8898CC,  gui_local_post)
 //NSTUB(0xFF889CA8,  gui_other_post)
 //NSTUB(0xFF889DCC,  gui_post_10000085) // should be called post 100000a5 no ? <-- not sure what this means.
