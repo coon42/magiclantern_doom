@@ -15,3 +15,6 @@
 #define HIJACK_FIXBR_BZERO32        0xE004014A   /* called from cstart */
 #define HIJACK_FIXBR_CREATE_ITASK   0xE00401AC   /* called from cstart */
 #define HIJACK_INSTR_MY_ITASK       0xE00401DC   /* address of init_task passed to create_init_task */
+
+#define GMT_NFUNCS 0x7
+#define GMT_FUNCTABLE 0xe0805f20
