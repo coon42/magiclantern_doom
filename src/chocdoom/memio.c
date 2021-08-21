@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "extfunctions.h"
 
 #include "memio.h"
 
@@ -61,7 +62,7 @@ size_t mem_fread(void *buf, size_t size, size_t nmemb, MEMFILE *stream)
 
 	if (stream->mode != MODE_READ)
 	{
-		printf("not a read stream\n");
+		uart_printf("not a read stream\n");
 		return -1;
 	}
 
@@ -189,7 +190,7 @@ int mem_fseek(MEMFILE *stream, signed long position, mem_rel_t whence)
 	}
 	else
 	{
-		printf("Error seeking to %i\n", newpos);
+		uart_printf("Error seeking to %d\n", newpos);
 		return -1;
 	}
 }

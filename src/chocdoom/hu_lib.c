@@ -16,8 +16,9 @@
 //
 
 
-#include <ctype.h>
 
+#include <stdio.h>
+#include "dryos.h"
 #include "doomdef.h"
 #include "doomkeys.h"
 

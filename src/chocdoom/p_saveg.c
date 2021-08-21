@@ -17,8 +17,11 @@
 //
 
 
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h> 
+#include "dryos.h" 
 
 #include "dstrings.h"
 #include "deh_main.h"
@@ -33,12 +36,11 @@
 #include "m_misc.h"
 #include "r_state.h"
 
-#include "ff.h"
 
 #define SAVEGAME_EOF 0x1d
 #define VERSIONSIZE 16 
 
-FIL save_stream;
+FILE* save_stream;
 int savegamelength;
 boolean savegame_error;
 
@@ -69,7 +71,7 @@ char *P_SaveGameFile(int slot)
     if (filename == NULL)
     {
         filename_size = strlen(savegamedir) + 32;
-        filename = malloc(filename_size);
+        filename = _AllocateMemory(filename_size);
     }
 
     DEH_snprintf(basename, 32, SAVEGAMENAME "%d.dsg", slot);
@@ -84,12 +86,12 @@ static byte saveg_read8(void)
 {
     byte result;
     unsigned long count;
-
-    if (f_readn (&save_stream, &result, 1, &count) != FR_OK)
+          
+    if (FIO_ReadFile(save_stream,&result,1))
     {
         if (!savegame_error)
         {
-            fprintf(stderr, "saveg_read8: Unexpected end of file while "
+            uart_printf("saveg_read8: Unexpected end of file while "
                             "reading save game\n");
 
             savegame_error = true;
@@ -102,12 +104,12 @@ static byte saveg_read8(void)
 static void saveg_write8(byte value)
 {
 	unsigned long count;
-
-	if (f_writen (&save_stream, &value, 1, &count) != FR_OK)
+     
+	if (FIO_WriteFile(save_stream,&value,1))
     {
         if (!savegame_error)
         {
-            fprintf(stderr, "saveg_write8: Error while writing save game\n");
+            uart_printf("saveg_write8: Error while writing save game\n");
 
             savegame_error = true;
         }
@@ -154,6 +156,9 @@ static void saveg_write32(int value)
 
 static void saveg_read_pad(void)
 {
+    uart_printf("saveg_read_pad not implemented!\n");
+    return;
+    #if 0
     unsigned long pos;
     int padding;
     int i;
@@ -166,10 +171,14 @@ static void saveg_read_pad(void)
     {
         saveg_read8();
     }
+    #endif
 }
 
 static void saveg_write_pad(void)
 {
+     uart_printf("saveg_write_pad not implemented!\n");
+    return;
+    #if 0
     unsigned long pos;
     int padding;
     int i;
@@ -182,6 +191,7 @@ static void saveg_write_pad(void)
     {
         saveg_write8(0);
     }
+    #endif
 }
 
 
@@ -1360,7 +1370,7 @@ void P_WriteSaveGameHeader(char *description)
         saveg_write8(0);
 
     memset(name, 0, sizeof(name));
-    M_snprintf(name, sizeof(name), "version %i", G_VanillaVersionCode());
+    M_snprintf(name, sizeof(name), "version %d", G_VanillaVersionCode());
 
     for (i=0; i<VERSIONSIZE; ++i)
         saveg_write8(name[i]);
@@ -1397,7 +1407,7 @@ boolean P_ReadSaveGameHeader(void)
         read_vcheck[i] = saveg_read8();
 
     memset(vcheck, 0, sizeof(vcheck));
-    M_snprintf(vcheck, sizeof(vcheck), "version %i", G_VanillaVersionCode());
+    M_snprintf(vcheck, sizeof(vcheck), "version %d", G_VanillaVersionCode());
     if (strcmp(read_vcheck, vcheck) != 0)
 	return false;				// bad version 
 
@@ -1669,7 +1679,7 @@ void P_UnArchiveThinkers (void)
 	    break;
 
 	  default:
-	    I_Error ("Unknown tclass %i in savegame",tclass);
+	    I_Error ("Unknown tclass %d in savegame",tclass);
 	}
 	
     }
@@ -1886,7 +1896,7 @@ void P_UnArchiveSpecials (void)
 	    break;
 				
 	  default:
-	    I_Error ("P_UnarchiveSpecials:Unknown tclass %i "
+	    I_Error ("P_UnarchiveSpecials:Unknown tclass %d "
 		     "in savegame",tclass);
 	}
 	

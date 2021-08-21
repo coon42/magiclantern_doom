@@ -27,6 +27,7 @@
 #include "i_video.h"
 #include "m_argv.h"
 #include "z_zone.h"
+#include "extfunctions.h"
 
 #if defined(_MSC_VER) && !defined(__cplusplus)
 #define inline __inline
@@ -374,12 +375,11 @@ static void I_InitStretchTables(byte *palette)
     // mix 80%  =  stretch_tables[0] used backwards
     // mix 100% =  just write line 2
 
-    printf("I_InitStretchTables: Generating lookup tables..");
-    fflush(stdout);
+    uart_printf("I_InitStretchTables: Generating lookup tables..");
     stretch_tables[0] = GenerateStretchTable(palette, 20);
-    printf(".."); fflush(stdout);
+    uart_printf(".."); 
     stretch_tables[1] = GenerateStretchTable(palette, 40);
-    puts("");
+    uart_printf("\n");
 }
 
 // Create 50%/50% table for 800x600 squash mode
@@ -391,10 +391,10 @@ static void I_InitSquashTable(byte *palette)
         return;
     }
 
-    printf("I_InitSquashTable: Generating lookup table..");
-    fflush(stdout);
+    uart_printf("I_InitSquashTable: Generating lookup table..\n");
+  
     half_stretch_table = GenerateStretchTable(palette, 50);
-    puts("");
+    uart_printf("\n");
 }
 
 // Destroy the scaling lookup tables. This should only ever be called
@@ -408,7 +408,7 @@ void I_ResetScaleTables(byte *palette)
         Z_Free(stretch_tables[0]);
         Z_Free(stretch_tables[1]);
 
-        printf("I_ResetScaleTables: Regenerating lookup tables..\n");
+        uart_printf("I_ResetScaleTables: Regenerating lookup tables..\n");
         stretch_tables[0] = GenerateStretchTable(palette, 20);
         stretch_tables[1] = GenerateStretchTable(palette, 40);
     }
@@ -417,7 +417,7 @@ void I_ResetScaleTables(byte *palette)
     {
         Z_Free(half_stretch_table);
 
-        printf("I_ResetScaleTables: Regenerating lookup table..\n");
+        uart_printf("I_ResetScaleTables: Regenerating lookup table..\n");
 
         half_stretch_table = GenerateStretchTable(palette, 50);
     }

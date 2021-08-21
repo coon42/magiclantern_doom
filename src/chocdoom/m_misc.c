@@ -18,10 +18,14 @@
 //
 
 
+
+
 #include <stdio.h>
-#include <stdlib.h>
+
+#include <math.h> 
+#include "dryos.h"
 #include <string.h>
-#include <ctype.h>
+
 #include <errno.h>
 
 #ifdef _WIN32
@@ -32,7 +36,7 @@
 #include <direct.h>
 #endif
 #else
-#include <sys/stat.h>
+
 #include <sys/types.h>
 #endif
 
@@ -48,7 +52,9 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
-#include "ff.h"
+
+#include "extfunctions.h"
+#include "fio-ml.h"
 
 //
 // Create a directory
@@ -62,30 +68,8 @@ void M_MakeDirectory(char *path)
 	#if ORIGCODE
     mkdir(path, 0755);
 	#else
-    FRESULT res;
-    char* path_mod;
-    int len;
-
-    // remove trailing slash
-    len = strlen (path);
-
-    path_mod = (char*)malloc (len + 1);
-
-    strncpy (path_mod, path, len);
-
-    if (path_mod[len - 1] == '/')
-    {
-    	path_mod[len - 1] = 0;
-    }
-
-    res = f_mkdir (path_mod);
-
-    if ((res != FR_OK) && (res != FR_EXIST))
-    {
-    	I_Error ("M_MakeDirectory: path = '%s', path_mod = '%s', res = %i", path, path_mod, res);
-    }
-
-    free (path_mod);
+     uart_printf("M_MakeDirectory called! %s\n",path);
+     FIO_CreateDirectory(path);
 	#endif
 #endif
 }
@@ -112,14 +96,17 @@ boolean M_FileExists(char *filename)
         return errno == EISDIR;
     }
 #else
-	FILINFO fno;
+int size;
+if(FIO_GetFileSize(filename,&size)){
+uart_printf("M_FileExists called! File not found!%s \n",filename);
+return false;
+}else{
+    uart_printf("M_FileExists called! File found! %s  size:%d \n",filename,size);
+return true;
+}
+	     
 
-	if (f_stat (filename, &fno) != FR_OK)
-	{
-		return false;
-	}
 	
-	return true;
 #endif
 }
 
@@ -145,9 +132,12 @@ long M_FileLength(FILE *handle)
     return length;
 }
 #else
-long M_FileLength(FIL *handle)
+long M_FileLength(FILE *handle)
 {
-    return f_size (handle);
+    int size =-1;
+    	   FIO_GetFileSize(handle,&size);
+           uart_printf("M_FileLength: 0x%x",size);
+    return size;
 }
 #endif
 
@@ -177,28 +167,16 @@ boolean M_WriteFile(char *name, void *source, int length)
 #else
 boolean M_WriteFile(char *name, void *source, int length)
 {
-	FIL file;
+	FILE* file;
 	unsigned long c;
-
-	if (f_open (&file, name, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK)
-	{
-		printf ("M_WriteFile: cannot create file %s\n", name);
-		return false;
-	}
-
-	if (f_writen (&file, source, length, &c) != FR_OK)
-	{
-		printf ("M_WriteFile: could not write to file %s\n", name);
-		return false;
-	}
-
-	f_close (&file);
-
-	if (c != length)
-	{
-		return false;
-	}
-
+    file = FIO_CreateFile(name);
+    if(!FIO_WriteFile(file,source,length)){
+           uart_printf("M_WriteFile failed!\n");
+           FIO_CloseFile(file);
+        return false;
+     
+    }
+    FIO_CloseFile(file); 
 	return true;
 }
 #endif
@@ -235,20 +213,22 @@ int M_ReadFile(char *name, byte **buffer)
 #else
 int M_ReadFile(char *name, byte **buffer)
 {
-	FIL file;
+	FILE *file;
 	int length;
 	byte		*buf;
 	unsigned long read;
-
-	if (f_open (&file, name, FA_OPEN_EXISTING | FA_READ) != FR_OK)
+     file  = FIO_OpenFile(name, O_RDONLY | O_SYNC);
+	if (!file)
 	{
 		I_Error ("Couldn't read file %s", name);
+        return 0;
 	}
 
-	length = f_size (&file);
+	FIO_GetFileSize (name,&length);
 	buf = Z_Malloc (length, PU_STATIC, NULL);
-	f_readn (&file, buf, length, &read);
-	f_close (&file);
+    FIO_ReadFile(file,buf,length);
+	//f_readn (&file, buf, length, &read);
+    FIO_CloseFile(file);
 
 	*buffer = buf;
 	return length;
@@ -284,10 +264,13 @@ char *M_TempFile(char *s)
 
 boolean M_StrToInt(const char *str, int *result)
 {
+     uart_printf("M_StrToInt not implemented!\n ");
+    #if 0
     return sscanf(str, " 0x%x", result) == 1
         || sscanf(str, " 0X%x", result) == 1
         || sscanf(str, " 0%o", result) == 1
         || sscanf(str, " %d", result) == 1;
+   #endif
 }
 
 void M_ExtractFileBase(char *path, char *dest)
@@ -318,7 +301,7 @@ void M_ExtractFileBase(char *path, char *dest)
     {
         if (length >= 8)
         {
-            printf("Warning: Truncated '%s' lump name to '%.8s'.\n",
+            uart_printf("Warning: Truncated '%s' lump name to '%.8s'.\n",
                    filename, dest);
             break;
         }
@@ -410,7 +393,7 @@ char *M_StringReplace(const char *haystack, const char *needle,
 
     // Construct new string.
 
-    result = malloc(result_len);
+    result = _AllocateMemory(result_len);
     if (result == NULL)
     {
         I_Error("M_StringReplace: Failed to allocate new string");
@@ -512,7 +495,7 @@ char *M_StringJoin(const char *s, ...)
     }
     va_end(args);
 
-    result = malloc(result_len);
+    result = _AllocateMemory(result_len);
 
     if (result == NULL)
     {
@@ -590,11 +573,11 @@ char *M_OEMToUTF8(const char *oem)
     wchar_t *tmp;
     char *result;
 
-    tmp = malloc(len * sizeof(wchar_t));
+    tmp = _AllocateMemory(len * sizeof(wchar_t));
     MultiByteToWideChar(CP_OEMCP, 0, oem, len, tmp, len);
-    result = malloc(len * 4);
+    result = _AllocateMemory(len * 4);
     WideCharToMultiByte(CP_UTF8, 0, tmp, len, result, len * 4, NULL, NULL);
-    free(tmp);
+    _FreeMemory(tmp);
 
     return result;
 }

@@ -123,7 +123,7 @@ static void LoadGameSettings(net_gamesettings_t *settings)
 
     if (lowres_turn)
     {
-        printf("NOTE: Turning resolution is reduced; this is probably "
+        uart_printf("NOTE: Turning resolution is reduced; this is probably "
                "because there is a client recording a Vanilla demo.\n");
     }
 
@@ -252,10 +252,10 @@ void D_CheckNetGame (void)
     D_StartNetGame(&settings, NULL);
     LoadGameSettings(&settings);
 
-    DEH_printf("startskill %i  deathmatch: %i  startmap: %i  startepisode: %i\n",
+    DEH_printf("startskill %d  deathmatch: %d  startmap: %d  startepisode: %d\n",
                startskill, deathmatch, startmap, startepisode);
 
-    DEH_printf("player %i of %i (%i nodes)\n",
+    DEH_printf("player %d of %d (%d nodes)\n",
                consoleplayer+1, settings.num_players, settings.num_players);
 
     // Show players here; the server might have specified a time limit
@@ -273,8 +273,8 @@ void D_CheckNetGame (void)
         {
             DEH_printf("Levels will end after %d minute", timelimit);
             if (timelimit > 1)
-                printf("s");
-            printf(".\n");
+                uart_printf("s");
+            uart_printf(".\n");
         }
     }
 }

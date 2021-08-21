@@ -35,14 +35,9 @@ rcsid[] = "$Id: i_x.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
 
 #include "tables.h"
 #include "doomkeys.h"
-
+#include "bmp.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include "lcd.h"
-#include "gfx.h"
-#include "images.h"
-#include "touch.h"
-#include "button.h"
 
 // The screen buffer; this is modified to draw things to the screen
 
@@ -95,7 +90,7 @@ static uint16_t rgb565_palette[256];
 
 // Last touch state
 
-static touch_state_t last_touch_state;
+
 
 // Last button state
 
@@ -104,21 +99,19 @@ static bool last_button_state;
 // run state
 
 static bool run;
-
+struct marv
+{
+    uint32_t signature;    // MARV - VRAM reversed
+    uint8_t *bitmap_data;  // either UYVY or UYVY + opacity
+    uint8_t *opacity_data; // optional; if missing, interleaved in bitmap_data
+    uint32_t flags;        // (flags is a guess)
+    uint32_t width;        // X resolution; may be larger than screen size
+    uint32_t height;       // Y resolution; may be larger than screen size
+    uint32_t pmem;         // pointer to PMEM (Permanent Memory) structure
+};
 void I_InitGraphics (void)
 {
-	gfx_image_t keys_img;
-	gfx_coord_t coords;
-
-	gfx_init_img (&keys_img, 40, 320, GFX_PIXEL_FORMAT_RGB565, RGB565_BLACK);
-	keys_img.pixel_data = (uint8_t*)img_keys;
-	gfx_init_img_coord (&coords, &keys_img);
-
-	gfx_draw_img (&keys_img, &coords);
-	lcd_refresh ();
-
-	gfx_draw_img (&keys_img, &coords);
-	lcd_refresh ();
+	
 
 	I_VideoBuffer = (byte*)Z_Malloc (SCREENWIDTH * SCREENHEIGHT, PU_STATIC, NULL);
 
@@ -140,7 +133,7 @@ void I_GetEvent (void)
 	event_t event;
 	bool button_state;
 
-	button_state = button_read ();
+	button_state = 1; //turtius: implement button reads
 
 	if (last_button_state != button_state)
 	{
@@ -154,155 +147,6 @@ void I_GetEvent (void)
 		D_PostEvent (&event);
 	}
 
-	touch_main ();
-
-	if ((touch_state.x != last_touch_state.x) || (touch_state.y != last_touch_state.y) || (touch_state.status != last_touch_state.status))
-	{
-		last_touch_state = touch_state;
-
-		event.type = (touch_state.status == TOUCH_PRESSED) ? ev_keydown : ev_keyup;
-		event.data1 = -1;
-		event.data2 = -1;
-		event.data3 = -1;
-
-		if ((touch_state.x > 49)
-		 && (touch_state.x < 72)
-		 && (touch_state.y > 104)
-		 && (touch_state.y < 143))
-		{
-			// select weapon
-			if (touch_state.x < 60)
-			{
-				// lower row (5-7)
-				if (touch_state.y < 119)
-				{
-					event.data1 = '5';
-				}
-				else if (touch_state.y < 131)
-				{
-					event.data1 = '6';
-				}
-				else
-				{
-					event.data1 = '1';
-				}
-			}
-			else
-			{
-				// upper row (2-4)
-				if (touch_state.y < 119)
-				{
-					event.data1 = '2';
-				}
-				else if (touch_state.y < 131)
-				{
-					event.data1 = '3';
-				}
-				else
-				{
-					event.data1 = '4';
-				}
-			}
-		}
-		else if (touch_state.x < 40)
-		{
-			// button bar at bottom screen
-			if (touch_state.y < 40)
-			{
-				// enter
-				event.data1 = KEY_ENTER;
-			}
-			else if (touch_state.y < 80)
-			{
-				// escape
-				event.data1 = KEY_ESCAPE;
-			}
-			else if (touch_state.y < 120)
-			{
-				// use
-				event.data1 = KEY_USE;
-			}
-			else if (touch_state.y < 160)
-			{
-				// map
-				event.data1 = KEY_TAB;
-			}
-			else if (touch_state.y < 200)
-			{
-				// pause
-				event.data1 = KEY_PAUSE;
-			}
-			else if (touch_state.y < 240)
-			{
-				// toggle run
-				if (touch_state.status == TOUCH_PRESSED)
-				{
-					run = !run;
-
-					event.data1 = KEY_RSHIFT;
-
-					if (run)
-					{
-						event.type = ev_keydown;
-					}
-					else
-					{
-						event.type = ev_keyup;
-					}
-				}
-				else
-				{
-					return;
-				}
-			}
-			else if (touch_state.y < 280)
-			{
-				// save
-				event.data1 = KEY_F2;
-			}
-			else if (touch_state.y < 320)
-			{
-				// load
-				event.data1 = KEY_F3;
-			}
-		}
-		else
-		{
-			// movement/menu navigation
-			if (touch_state.x < 100)
-			{
-				if (touch_state.y < 100)
-				{
-					event.data1 = KEY_STRAFE_L;
-				}
-				else if (touch_state.y < 220)
-				{
-					event.data1 = KEY_DOWNARROW;
-				}
-				else
-				{
-					event.data1 = KEY_STRAFE_R;
-				}
-			}
-			else if (touch_state.x < 180)
-			{
-				if (touch_state.y < 160)
-				{
-					event.data1 = KEY_LEFTARROW;
-				}
-				else
-				{
-					event.data1 = KEY_RIGHTARROW;
-				}
-			}
-			else
-			{
-				event.data1 = KEY_UPARROW;
-			}
-		}
-
-		D_PostEvent (&event);
-	}
 }
 
 void I_StartTic (void)
@@ -313,27 +157,69 @@ void I_StartTic (void)
 void I_UpdateNoBlit (void)
 {
 }
+static uint32_t rgb2yuv422(uint8_t r, uint8_t g, uint8_t b)
+{
+    float R = r;
+    float G = g;
+    float B = b;
+    float Y, U, V;
+    uint8_t y, u, v;
 
+    Y = R * .299000 + G * .587000 + B * .114000;
+    U = R * -.168736 + G * -.331264 + B * .500000 + 128;
+    V = R * .500000 + G * -.418688 + B * -.081312 + 128;
+
+    y = Y;
+    u = U;
+    v = V;
+
+    return (u << 24) | (y << 16) | (v << 8) | y;
+}
 void I_FinishUpdate (void)
 {
 	int x, y;
 	byte index;
 
-	lcd_vsync = false;
+
 
 	for (y = 0; y < SCREENHEIGHT; y++)
 	{
 		for (x = 0; x < SCREENWIDTH; x++)
 		{
 			index = I_VideoBuffer[y * SCREENWIDTH + x];
+uint8_t *bmp = bmp_vram_raw();
 
-			((uint16_t*)lcd_frame_buffer)[x * GFX_MAX_WIDTH + (GFX_MAX_WIDTH - y - 1)] = rgb565_palette[index];
+    struct marv *marv = bmp_marv();
+
+    // UYVY display, must convert
+    //uint32_t color = 0xFFFFFFFF;
+    uint32_t uyvy = rgb2yuv422(index >> 24,
+                               (index >> 16) & 0xff,
+                              (index >> 8) & 0xff);
+     // uint32_t uyvy = rgb2yuv422(index);
+    uint8_t alpha =  0xff;
+
+    if (marv->opacity_data)
+    {
+        // 80D, 200D
+        // adapted from names_are_hard, https://pastebin.com/Vt84t4z1
+        uint32_t *offset = (uint32_t *)&bmp[(x & ~1) * 2 + y * 2 * marv->width];
+        if (x % 2)
+        {
+            // set U, Y2, V, keep Y1
+            *offset = (*offset & 0x0000FF00) | (uyvy & 0xFFFF00FF);
+        }
+        else
+        {
+            // set U, Y1, V, keep Y2
+            *offset = (*offset & 0xFF000000) | (uyvy & 0x00FFFFFF);
+        }
+        marv->opacity_data[x + y * marv->width] = alpha;
+    }
+			//((uint16_t*)lcd_frame_buffer)[x * GFX_MAX_WIDTH + (GFX_MAX_WIDTH - y - 1)] = rgb565_palette[index];
+			//turtius: fix drawing routines 
 		}
 	}
-
-	lcd_refresh ();
-
-	lcd_vsync = true;
 }
 
 //
@@ -356,10 +242,10 @@ void I_SetPalette (byte* palette)
 	{
 		c = (col_t*)palette;
 
-		rgb565_palette[i] = GFX_RGB565(gammatable[usegamma][c->r],
-									   gammatable[usegamma][c->g],
-									   gammatable[usegamma][c->b]);
-
+		//rgb565_palette[i] = GFX_RGB565(gammatable[usegamma][c->r],
+		//							   gammatable[usegamma][c->g],
+		//							   gammatable[usegamma][c->b]);
+        //turtius: fix this
 		palette += 3;
 	}
 }
@@ -377,10 +263,10 @@ int I_GetPaletteIndex (int r, int g, int b)
 
     for (i = 0; i < 256; ++i)
     {
-    	color.r = GFX_RGB565_R(rgb565_palette[i]);
-    	color.g = GFX_RGB565_G(rgb565_palette[i]);
-    	color.b = GFX_RGB565_B(rgb565_palette[i]);
-
+    	//color.r = GFX_RGB565_R(rgb565_palette[i]);
+    //	color.g = GFX_RGB565_G(rgb565_palette[i]);
+    //	color.b = GFX_RGB565_B(rgb565_palette[i]);
+//turtius: fix this
         diff = (r - color.r) * (r - color.r)
              + (g - color.g) * (g - color.g)
              + (b - color.b) * (b - color.b);

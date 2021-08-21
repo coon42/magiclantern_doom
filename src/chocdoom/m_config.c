@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include "dryos.h"
 #include <errno.h>
 
 #include "config.h"
@@ -1632,10 +1632,10 @@ static void SaveDefaultCollection(default_collection_t *collection)
 
         // Print the name and line up all values at 30 characters
 
-        chars_written = fprintf(f, "%s ", defaults[i].name);
+        chars_written = uart_printf( "%s ", defaults[i].name);
 
         for (; chars_written < 30; ++chars_written)
-            fprintf(f, " ");
+            uart_printf( " ");
 
         // Print the value
 
@@ -1684,27 +1684,27 @@ static void SaveDefaultCollection(default_collection_t *collection)
                     }
                 }
 
-	        fprintf(f, "%i", v);
+	        uart_printf( "%d", v);
                 break;
 
             case DEFAULT_INT:
-	        fprintf(f, "%i", * (int *) defaults[i].location);
+	        uart_printf( "%d", * (int *) defaults[i].location);
                 break;
 
             case DEFAULT_INT_HEX:
-	        fprintf(f, "0x%x", * (int *) defaults[i].location);
+	        uart_printf( "0x%x", * (int *) defaults[i].location);
                 break;
 
             case DEFAULT_FLOAT:
-                fprintf(f, "%f", * (float *) defaults[i].location);
+                uart_printf( "%f", * (float *) defaults[i].location);
                 break;
 
             case DEFAULT_STRING:
-	        fprintf(f,"\"%s\"", * (char **) (defaults[i].location));
+	        uart_printf("\"%s\"", * (char **) (defaults[i].location));
                 break;
         }
 
-        fprintf(f, "\n");
+        uart_printf( "\n");
     }
 
     fclose (f);
@@ -1715,14 +1715,18 @@ static void SaveDefaultCollection(default_collection_t *collection)
 
 static int ParseIntParameter(char *strparm)
 {
+    uart_printf("ParseIntParameter not implemented!\n");
+    #if 0
     int parm;
 
     if (strparm[0] == '0' && strparm[1] == 'x')
         sscanf(strparm+2, "%x", &parm);
     else
-        sscanf(strparm, "%i", &parm);
+        sscanf(strparm, "%d", &parm);
 
     return parm;
+    #endif
+    return 0;
 }
 
 static void SetVariable(default_t *def, char *value)
@@ -1897,15 +1901,16 @@ void M_LoadDefaults (void)
     if (i)
     {
 	doom_defaults.filename = myargv[i+1];
-	printf ("	default file: %s\n",doom_defaults.filename);
+	uart_printf ("	default file: %s\n",doom_defaults.filename);
     }
     else
     {
+      
         doom_defaults.filename
             = M_StringJoin(configdir, default_main_config, NULL);
     }
 
-    printf("saving config in %s\n", doom_defaults.filename);
+    uart_printf("saving config in %s\n", doom_defaults.filename);
 
     //!
     // @arg <file>
@@ -1919,7 +1924,7 @@ void M_LoadDefaults (void)
     if (i)
     {
         extra_defaults.filename = myargv[i+1];
-        printf("        extra configuration file: %s\n", 
+        uart_printf("        extra configuration file: %s\n", 
                extra_defaults.filename);
     }
     else
@@ -1963,6 +1968,7 @@ static default_t *GetDefaultForName(char *name)
 
 void M_BindVariable(char *name, void *location)
 {
+    uart_printf("Variable assigned name: %s\n",name);
     default_t *variable;
 
     variable = GetDefaultForName(name);
@@ -2042,7 +2048,7 @@ float M_GetFloatVariable(char *name)
 
 static char *GetDefaultConfigDir(void)
 {
-#if !defined(_WIN32) || defined(_WIN32_WCE)
+#if 0
 
     // Configuration settings are stored in ~/.chocolate-doom/,
     // except on Windows, where we behave like Vanilla Doom and
@@ -2066,7 +2072,7 @@ static char *GetDefaultConfigDir(void)
     else
 #endif /* #ifndef _WIN32 */
     {
-        return strdup(FILES_DIR"/");
+        return strdup(FILES_DIR);
     }
 }
 
@@ -2092,7 +2098,7 @@ void M_SetConfigDir(char *dir)
 
     if (strcmp(configdir, "") != 0)
     {
-        printf("Using %s for configuration and saves\n", configdir);
+        uart_printf("Using %s for configuration and saves\n", configdir);
     }
 
     // Make the directory if it doesn't already exist:
@@ -2134,13 +2140,13 @@ char *M_GetSaveGameDir(char *iwadname)
 
         M_MakeDirectory(savegamedir);
 
-        free(topdir);
+        _FreeMemory(topdir);
 #else
-        savegamedir = M_StringJoin(configdir, "savegame/", NULL);
+        savegamedir = M_StringJoin(configdir, "/SAVEGAME", NULL);
 
         M_MakeDirectory(savegamedir);
 
-        printf ("Using %s for savegames\n", savegamedir);
+        uart_printf ("Using %s for savegames\n", savegamedir);
 #endif
     }
 

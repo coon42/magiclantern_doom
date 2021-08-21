@@ -24,18 +24,14 @@
 #include <stdarg.h>
 
 #include "doomtype.h"
-#include "ff.h"
+#include "extfunctions.h"
 
 boolean M_WriteFile(char *name, void *source, int length);
 int M_ReadFile(char *name, byte **buffer);
 void M_MakeDirectory(char *dir);
 char *M_TempFile(char *s);
 boolean M_FileExists(char *file);
-#if ORIGCODE
 long M_FileLength(FILE *handle);
-#else
-long M_FileLength(FIL *handle);
-#endif
 boolean M_StrToInt(const char *str, int *result);
 void M_ExtractFileBase(char *path, char *dest);
 void M_ForceUppercase(char *text);

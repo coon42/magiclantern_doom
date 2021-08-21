@@ -18,7 +18,7 @@
 
 
 #include <stdio.h>
-#include <ctype.h>
+#include "dryos.h"
 
 #include "deh_main.h"
 #include "doomdef.h"

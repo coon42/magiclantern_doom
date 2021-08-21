@@ -18,13 +18,18 @@
 //
 
 
-#include <stdlib.h>
-#include <ctype.h>
+#include <stdio.h>
+
+#include <math.h> 
+#include "dryos.h"
+
 
 
 #include "doomdef.h"
 #include "doomkeys.h"
 #include "dstrings.h"
+
+#include "extfunctions.h"
 
 #include "d_main.h"
 #include "deh_main.h"
@@ -505,7 +510,7 @@ void M_ReadSaveStrings(void)
 #if ORIGCODE
     FILE   *handle;
 #else
-    FIL		handle;
+    FILE*		handle;
     unsigned long count;
 #endif
     int     i;
@@ -519,7 +524,8 @@ void M_ReadSaveStrings(void)
 
         if (handle == NULL)
 #else
-        if (f_open (&handle, name, FA_OPEN_EXISTING | FA_READ) != FR_OK)
+          FIO_OpenFile(handle, O_RDONLY | O_SYNC);
+        if (!handle)
 #endif
         {
             M_StringCopy(savegamestrings[i], EMPTYSTRING, SAVESTRINGSIZE);
@@ -531,8 +537,8 @@ void M_ReadSaveStrings(void)
 		fread(&savegamestrings[i], 1, SAVESTRINGSIZE, handle);
 		fclose(handle);
 #else
-		f_read (&handle, &savegamestrings[i], SAVESTRINGSIZE, &count);
-		f_close (&handle);
+       count =  FIO_ReadFile(handle,&savegamestrings[i],SAVESTRINGSIZE);
+	   FIO_CloseFile(handle);
 #endif
 		LoadMenu[i].status = 1;
     }
@@ -982,8 +988,8 @@ void M_Episode(int choice)
     if ( (gamemode == registered)
 	 && (choice > 2))
     {
-      fprintf( stderr,
-	       "M_Episode: 4th episode requires UltimateDOOM\n");
+     
+	       uart_printf("M_Episode: 4th episode requires UltimateDOOM\n");
       choice = 0;
     }
 	 

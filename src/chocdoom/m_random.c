@@ -21,8 +21,8 @@
 #endif
 
 #include "m_random.h"
+#include "extfunctions.h"
 
-#include "main.h"
 
 //
 // M_Random
@@ -75,7 +75,8 @@ void M_ClearRandom (void)
 #if ORIGCODE
     rndindex = time(NULL) & 0xff;
 #else
-	rndindex = systime & 0xff;
+     uart_printf("M_ClearRandom not implemented!\n");
+	//rndindex = systime & 0xff;
 #endif
 }
 

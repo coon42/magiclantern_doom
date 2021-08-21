@@ -149,25 +149,25 @@ static int GetNumPlayers(wbstartstruct_t *stats)
 
 static void PrintBanner(FILE *stream)
 {
-    fprintf(stream, "===========================================\n");
+    uart_printf( "===========================================\n");
 }
 
 static void PrintPercentage(FILE *stream, int amount, int total)
 {
     if (total == 0)
     {
-        fprintf(stream, "0");
+        uart_printf( "0");
     }
     else
     {
-        fprintf(stream, "%i / %i", amount, total);
+        uart_printf( "%d / %d", amount, total);
 
         // statdump.exe is a 16-bit program, so very occasionally an
         // integer overflow can occur when doing this calculation with
         // a large value. Therefore, cast to short to give the same
         // output.
 
-        fprintf(stream, " (%i%%)", (short) (amount * 100) / total);
+        uart_printf( " (%d%%)", (short) (amount * 100) / total);
     }
 }
 
@@ -182,26 +182,26 @@ static void PrintPlayerStats(FILE *stream, wbstartstruct_t *stats,
 {
     wbplayerstruct_t *player = &stats->plyr[player_num];
 
-    fprintf(stream, "Player %i (%s):\n", player_num + 1,
+    uart_printf( "Player %d (%s):\n", player_num + 1,
             player_colors[player_num]);
 
     /* Kills percentage */
 
-    fprintf(stream, "\tKills: ");
+    uart_printf( "\tKills: ");
     PrintPercentage(stream, player->skills, stats->maxkills);
-    fprintf(stream, "\n");
+    uart_printf( "\n");
 
     /* Items percentage */
 
-    fprintf(stream, "\tItems: ");
+    uart_printf( "\tItems: ");
     PrintPercentage(stream, player->sitems, stats->maxitems);
-    fprintf(stream, "\n");
+    uart_printf( "\n");
 
     /* Secrets percentage */
 
-    fprintf(stream, "\tSecrets: ");
+    uart_printf( "\tSecrets: ");
     PrintPercentage(stream, player->ssecret, stats->maxsecret);
-    fprintf(stream, "\n");
+    uart_printf( "\n");
 }
 
 #endif
@@ -214,11 +214,11 @@ static void PrintFragsTable(FILE *stream, wbstartstruct_t *stats)
 {
     int x, y;
 
-    fprintf(stream, "Frags:\n");
+    uart_printf( "Frags:\n");
 
     /* Print header */
 
-    fprintf(stream, "\t\t");
+    uart_printf( "\t\t");
 
     for (x=0; x<MAXPLAYERS; ++x)
     {
@@ -228,12 +228,12 @@ static void PrintFragsTable(FILE *stream, wbstartstruct_t *stats)
             continue;
         }
 
-        fprintf(stream, "%s\t", player_colors[x]);
+        uart_printf( "%s\t", player_colors[x]);
     }
 
-    fprintf(stream, "\n");
+    uart_printf( "\n");
 
-    fprintf(stream, "\t\t-------------------------------- VICTIMS\n");
+    uart_printf( "\t\t-------------------------------- VICTIMS\n");
 
     /* Print table */
 
@@ -244,7 +244,7 @@ static void PrintFragsTable(FILE *stream, wbstartstruct_t *stats)
             continue;
         }
 
-        fprintf(stream, "\t%s\t|", player_colors[y]);
+        uart_printf( "\t%s\t|", player_colors[y]);
 
         for (x=0; x<MAXPLAYERS; ++x)
         {
@@ -253,14 +253,14 @@ static void PrintFragsTable(FILE *stream, wbstartstruct_t *stats)
                 continue;
             }
 
-            fprintf(stream, "%i\t", stats->plyr[y].frags[x]);
+            uart_printf( "%d\t", stats->plyr[y].frags[x]);
         }
 
-        fprintf(stream, "\n");
+        uart_printf( "\n");
     }
 
-    fprintf(stream, "\t\t|\n");
-    fprintf(stream, "\t     KILLERS\n");
+    uart_printf( "\t\t|\n");
+    uart_printf( "\t     KILLERS\n");
 }
 
 #endif
@@ -277,14 +277,14 @@ static void PrintLevelName(FILE *stream, int episode, int level)
     {
 
         case doom:
-            fprintf(stream, "E%iM%i\n", episode + 1, level + 1);
+            uart_printf( "E%iM%d\n", episode + 1, level + 1);
             break;
         case doom2:
-            fprintf(stream, "MAP%02i\n", level + 1);
+            uart_printf( "MAP%02i\n", level + 1);
             break;
         default:
         case none:
-            fprintf(stream, "E%iM%i / MAP%02i\n", 
+            uart_printf( "E%iM%d / MAP%02i\n", 
                     episode + 1, level + 1, level + 1);
             break;
     }
@@ -304,13 +304,13 @@ static void PrintStats(FILE *stream, wbstartstruct_t *stats)
     int i;
 
     PrintLevelName(stream, stats->epsd, stats->last);
-    fprintf(stream, "\n");
+    uart_printf( "\n");
 
     leveltime = stats->plyr[0].stime / TICRATE;
     partime = stats->partime / TICRATE;
-    fprintf(stream, "Time: %i:%02i", leveltime / 60, leveltime % 60);
-    fprintf(stream, " (par: %i:%02i)\n", partime / 60, partime % 60);
-    fprintf(stream, "\n");
+    uart_printf( "Time: %d:%02i", leveltime / 60, leveltime % 60);
+    uart_printf( " (par: %d:%02i)\n", partime / 60, partime % 60);
+    uart_printf( "\n");
 
     for (i=0; i<MAXPLAYERS; ++i)
     {
@@ -325,7 +325,7 @@ static void PrintStats(FILE *stream, wbstartstruct_t *stats)
         PrintFragsTable(stream, stats);
     }
 
-    fprintf(stream, "\n");
+    uart_printf( "\n");
 }
 
 #endif
@@ -359,7 +359,7 @@ void StatDump(void)
 
     if (i > 0)
     {
-        printf("Statistics captured for %i level(s)\n", num_captured_stats);
+        uart_printf("Statistics captured for %d level(s)\n", num_captured_stats);
 
         // We actually know what the real gamemission is, but this has
         // to match the output from statdump.exe.

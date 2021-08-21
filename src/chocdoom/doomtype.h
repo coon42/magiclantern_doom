@@ -69,13 +69,11 @@
 typedef bool boolean;
 
 #else
+typedef int boolean;
+#define true 1
+#define false 0
+#define undef 0xFFFFFFFF
 
-typedef enum 
-{
-    false	= 0,
-    true	= 1,
-	undef	= 0xFFFFFFFF
-} boolean;
 
 #endif
 

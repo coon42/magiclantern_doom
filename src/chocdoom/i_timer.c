@@ -22,8 +22,9 @@
 
 #include "i_timer.h"
 #include "doomtype.h"
+#include "extfunctions.h"
+#include "dryos.h"
 
-#include "main.h"
 
 #ifdef ORIGCODE
 
@@ -96,9 +97,8 @@ static uint32_t basetime = 0;
 int  I_GetTime (void)
 {
     uint32_t ticks;
-
-    ticks = systime;
-
+    
+    ticks = MEM(0xD400000C)/1000; //turtius: implement systime
     if (basetime == 0)
         basetime = ticks;
 
@@ -115,8 +115,7 @@ int I_GetTimeMS(void)
 {
     uint32_t ticks;
 
-    ticks = systime;
-
+    ticks = MEM(0xD400000C)/1000; //turtius: implement systime
     if (basetime == 0)
         basetime = ticks;
 
@@ -127,12 +126,12 @@ int I_GetTimeMS(void)
 
 void I_Sleep(int ms)
 {
-	sleep_ms (ms);
+	msleep (ms);
 }
 
 void I_WaitVBL(int count)
 {
-    I_Sleep((count * 1000) / 70);
+    msleep((count * 1000) / 70);
 }
 
 

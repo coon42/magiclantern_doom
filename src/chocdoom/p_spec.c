@@ -1074,7 +1074,7 @@ void P_PlayerInSpecialSector (player_t* player)
 			
       default:
 	I_Error ("P_PlayerInSpecialSector: "
-		 "unknown special %i",
+		 "unknown special %d",
 		 sector->special);
 	break;
     };
@@ -1228,7 +1228,7 @@ static void DonutOverrun(fixed_t *s3_floorheight, short *s3_floorpic,
 
             if (tmp_s3_floorpic >= numflats)
             {
-                fprintf(stderr,
+                uart_printf(
                         "DonutOverrun: The second parameter for \"-donut\" "
                         "switch should be greater than 0 and less than number "
                         "of flats (%d). Using default value (%d) instead. \n",
@@ -1239,7 +1239,7 @@ static void DonutOverrun(fixed_t *s3_floorheight, short *s3_floorpic,
     }
 
     /*
-    fprintf(stderr,
+    uart_printf(
             "Linedef: %d; Sector: %d; "
             "New floor height: %d; New floor pic: %d\n",
             line->iLineID, pillar_sector->iSectorID,
@@ -1290,7 +1290,7 @@ int EV_DoDonut(line_t*	line)
 
         if (s2 == NULL)
         {
-            fprintf(stderr,
+             uart_printf(
                     "EV_DoDonut: linedef had no second sidedef! "
                     "Unexpected behavior may occur in Vanilla Doom. \n");
 	    break;
@@ -1311,7 +1311,7 @@ int EV_DoDonut(line_t*	line)
                 // s3->floorpic is a short at 0000:0008
                 // Trying to emulate
 
-                fprintf(stderr,
+               uart_printf(
                         "EV_DoDonut: WARNING: emulating buffer overrun due to "
                         "NULL back sector. "
                         "Unexpected behavior may occur in Vanilla Doom.\n");

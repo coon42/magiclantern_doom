@@ -39,7 +39,7 @@
 #include "net_server.h"
 #include "net_sdl.h"
 #include "net_loop.h"
-
+#include "extfunctions.h"
 // The complete set of data for a particular tic.
 
 typedef struct
@@ -173,7 +173,7 @@ static boolean BuildNewTic(void)
            return false;
     }
 
-    //printf ("mk:%i ",maketic);
+    //uart_printf ("mk:%d ",maketic);
     memset(&cmd, 0, sizeof(ticcmd_t));
     loop_interface->BuildTiccmd(&cmd, maketic);
 
@@ -260,7 +260,7 @@ static void D_Disconnected(void)
 
     // disconnected from server
 
-    printf("Disconnected from server.\n");
+    uart_printf("Disconnected from server.\n");
 }
 
 //
@@ -434,7 +434,7 @@ void D_StartNetGame(net_gamesettings_t *settings,
     // TODO: Message disabled until we fix new_sync.
     //if (!new_sync)
     //{
-    //    printf("Syncing netgames like Vanilla Doom.\n");
+    //    uart_printf("Syncing netgames like Vanilla Doom.\n");
     //}
 #else
     settings->consoleplayer = 0;
@@ -538,7 +538,7 @@ boolean D_InitNetGame(net_connect_data_t *connect_data)
                     NET_AddrToString(addr));
         }
 
-        printf("D_InitNetGame: Connected to %s\n", NET_AddrToString(addr));
+        uart_printf("D_InitNetGame: Connected to %s\n", NET_AddrToString(addr));
 
         // Wait for launch message received from server.
 
@@ -623,7 +623,7 @@ static void OldNetSync(void)
         if (maketic <= recvtic)
         {
             lasttime--;
-            // printf ("-");
+            // uart_printf ("-");
         }
 
         frameskip[frameon & 3] = oldnettics > recvtic;
@@ -632,7 +632,7 @@ static void OldNetSync(void)
         if (frameskip[0] && frameskip[1] && frameskip[2] && frameskip[3])
         {
             skiptics = 1;
-            // printf ("+");
+            // uart_printf ("+");
         }
     }
 }

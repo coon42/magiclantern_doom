@@ -18,17 +18,21 @@
 
 #include <stdio.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h> 
+#include "dryos.h"
+
 #include "m_misc.h"
 #include "w_file.h"
 #include "z_zone.h"
 #include "i_system.h"
 
-#include "ff.h"
 
 typedef struct
 {
     wad_file_t wad;
-    FIL fstream;
+    FILE* fstream;
 } stdc_wad_file_t;
 
 extern wad_file_class_t stdc_wad_file;
@@ -57,13 +61,14 @@ static wad_file_t *W_StdC_OpenFile(char *path)
     return &result->wad;
 #else
     stdc_wad_file_t *result;
-    FIL file;
-
-    if (f_open (&file, path, FA_OPEN_EXISTING | FA_READ) != FR_OK)
+    FILE* file;
+    file = FIO_OpenFile(path,O_RDONLY | O_SYNC);
+    if (!file)
     {
+         uart_printf("W_StdC_OpenFile: NULL\n");
     	return NULL;
     }
-
+    uart_printf("W_StdC_OpenFile: (%s)  fd:(%d)\n",path,file);
     // Create a new stdc_wad_file_t to hold the file handle.
 
     result = Z_Malloc(sizeof(stdc_wad_file_t), PU_STATIC, 0);
@@ -71,7 +76,7 @@ static wad_file_t *W_StdC_OpenFile(char *path)
 	result->wad.mapped = NULL;
 	result->wad.length = M_FileLength(&file);
 	result->fstream = file;
-
+    uart_printf("E\n");
 	return &result->wad;
 #endif
 }
@@ -90,7 +95,7 @@ static void W_StdC_CloseFile(wad_file_t *wad)
 
     stdc_wad = (stdc_wad_file_t *) wad;
 
-    f_close(&stdc_wad->fstream);
+    FIO_CloseFile(stdc_wad->fstream);
     Z_Free(stdc_wad);	
 #endif
 }
@@ -118,19 +123,15 @@ size_t W_StdC_Read(wad_file_t *wad, unsigned int offset,
     return result;
 #else
     stdc_wad_file_t *stdc_wad;
-	UINT count;
+      stdc_wad = (stdc_wad_file_t *) wad;
+    size_t offsetfile = FIO_SeekSkipFile(stdc_wad->fstream,offset,SEEK_SET);
+    size_t result = FIO_ReadFile(stdc_wad->fstream,buffer,buffer_len);
+   
+      // uart_printf("W_StdC_Read offsetfiles:(0x%x) fd:(0x%x) offset:(0x%x) result:(0x%x)\n",offsetfile,stdc_wad->fstream,offset,result);
 
-    stdc_wad = (stdc_wad_file_t *) wad;
+    return result;
+    
 
-    // Jump to the specified position in the file.
-
-	f_lseek (&stdc_wad->fstream, offset);
-
-    // Read into the buffer.
-
-    f_readn (&stdc_wad->fstream, buffer, buffer_len, &count);
-
-    return count;
 #endif
 }
 

@@ -18,7 +18,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
+#include "dryos.h"
 #include <string.h>
 
 #include "config.h"
@@ -214,12 +214,12 @@ static char *GetRegistryString(registry_value_t *reg_val)
     {
         // Allocate a buffer for the value and read the value
 
-        result = malloc(len);
+        result = _AllocateMemory(len);
 
         if (RegQueryValueEx(key, reg_val->value, NULL, &valtype,
                             (unsigned char *) result, &len) != ERROR_SUCCESS)
         {
-            free(result);
+            _FreeMemory(result);
             result = NULL;
         }
     }
@@ -254,7 +254,7 @@ static void CheckUninstallStrings(void)
 
         if (unstr == NULL)
         {
-            free(val);
+            _FreeMemory(val);
         }
         else
         {
@@ -288,7 +288,7 @@ static void CheckCollectorsEdition(void)
         AddIWADDir(subpath);
     }
 
-    free(install_path);
+    _FreeMemory(install_path);
 }
 
 
@@ -315,7 +315,7 @@ static void CheckSteamEdition(void)
         AddIWADDir(subpath);
     }
 
-    free(install_path);
+    _FreeMemory(install_path);
 }
 
 // The BFG edition ships with a full set of GUS patches. If we find them,
@@ -343,7 +343,7 @@ static void CheckSteamGUSPatches(void)
     }
 
     len = strlen(install_path) + strlen(STEAM_BFG_GUS_PATCHES) + 20;
-    patch_path = malloc(len);
+    patch_path = _AllocateMemory(len);
     M_snprintf(patch_path, len, "%s\\%s\\ACBASS.PAT",
                install_path, STEAM_BFG_GUS_PATCHES);
 
@@ -355,8 +355,8 @@ static void CheckSteamGUSPatches(void)
         M_SetVariable("gus_patch_path", patch_path);
     }
 
-    free(patch_path);
-    free(install_path);
+    _FreeMemory(patch_path);
+    _FreeMemory(install_path);
 }
 
 // Default install directories for DOS Doom
@@ -434,7 +434,7 @@ static char *CheckDirectoryHasIWAD(char *dir, char *iwadname)
         return filename;
     }
 
-    free(filename);
+    _FreeMemory(filename);
 
     return NULL;
 }
@@ -659,7 +659,7 @@ char *D_FindWADByName(char *name)
             return path;
         }
 
-        free(path);
+        _FreeMemory(path);
     }
 
     // File not found
@@ -754,8 +754,8 @@ const iwad_t **D_FindAllIWADs(int mask)
     int result_len;
     char *filename;
     int i;
-
-    result = malloc(sizeof(iwad_t *) * (arrlen(iwads) + 1));
+     uart_printf("D_FindAllIWADs\n");
+    result = _AllocateMemory(sizeof(iwad_t *) * (arrlen(iwads) + 1));
     result_len = 0;
 
     // Try to find all IWADs

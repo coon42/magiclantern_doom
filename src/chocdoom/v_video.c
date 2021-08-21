@@ -162,7 +162,7 @@ void V_DrawPatch(int x, int y, patch_t *patch)
      || y < 0
      || y + SHORT(patch->height) > SCREENHEIGHT)
     {
-        I_Error("Bad V_DrawPatch x=%i y=%i patch.width=%i patch.height=%i topoffset=%i leftoffset=%i", x, y, patch->width, patch->height, patch->topoffset, patch->leftoffset);
+        I_Error("Bad V_DrawPatch x=%d y=%d patch.width=%d patch.height=%d topoffset=%d leftoffset=%d", x, y, patch->width, patch->height, patch->topoffset, patch->leftoffset);
     }
 #endif
 
@@ -710,12 +710,12 @@ void WritePCXfile(char *filename, byte *data,
 
 static void error_fn(png_structp p, png_const_charp s)
 {
-    printf("libpng error: %s\n", s);
+    uart_printf("libpng error: %s\n", s);
 }
 
 static void warning_fn(png_structp p, png_const_charp s)
 {
-    printf("libpng warning: %s\n", s);
+    uart_printf("libpng warning: %s\n", s);
 }
 
 void WritePNGfile(char *filename, byte *data,
@@ -754,7 +754,7 @@ void WritePNGfile(char *filename, byte *data,
                  8, PNG_COLOR_TYPE_PALETTE, PNG_INTERLACE_NONE,
                  PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
-    pcolor = malloc(sizeof(*pcolor) * 256);
+    pcolor = _AllocateMemory(sizeof(*pcolor) * 256);
     if (!pcolor)
     {
         png_destroy_write_struct(&ppng, &pinfo);
@@ -769,7 +769,7 @@ void WritePNGfile(char *filename, byte *data,
     }
 
     png_set_PLTE(ppng, pinfo, pcolor, 256);
-    free(pcolor);
+    _FreeMemory(pcolor);
 
     png_write_info(ppng, pinfo);
 

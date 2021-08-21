@@ -36,8 +36,8 @@ void DEH_AddStringReplacement(char *from_text, char *to_text);
 #else
 
 #define DEH_String(x) (x)
-#define DEH_printf printf
-#define DEH_fprintf fprintf
+#define DEH_printf uart_printf
+#define DEH_fprintf(x,y,...) uart_printf(y)
 #define DEH_snprintf snprintf
 #define DEH_AddStringReplacement(x, y)
 

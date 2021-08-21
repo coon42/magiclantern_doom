@@ -16,9 +16,10 @@
 //
 
 
-#include <ctype.h>
+
 #include <stdio.h>
 #include <stdlib.h>
+#include "dryos.h"
 #include <string.h>
 
 #include "doomtype.h"
@@ -42,11 +43,18 @@ char**		myargv;
 
 int M_CheckParmWithArgs(char *check, int num_args)
 {
+    uart_printf("M_CheckParmWithArgs: %s %x\n",check,num_args);
     int i;
 
     for (i = 1; i < myargc - num_args; i++)
     {
+          uart_printf("M_CheckParmWithArgs: I:%d myargv:%d\n",i, myargv[i]); 
+        if(myargv[i] <= 1){
+            break;
+        }
+      
 	if (!strcasecmp(check, myargv[i]))
+         uart_printf("returning\n");
 	    return i;
     }
 
@@ -67,7 +75,8 @@ boolean M_ParmExists(char *check)
 
 int M_CheckParm(char *check)
 {
-    return M_CheckParmWithArgs(check, 0);
+    int size = M_CheckParmWithArgs(check, 0); 
+    return size;
 }
 
 #define MAXARGVS        100
@@ -91,13 +100,13 @@ static void LoadResponseFile(int argv_index)
 
     if (handle == NULL)
     {
-        printf ("\nNo such response file!");
+        uart_printf ("\nNo such response file!");
 #if ORIGCODE
         exit(1);
 #endif
     }
 
-    printf("Found response file %s!\n", response_filename);
+    uart_printf("Found response file %s!\n", response_filename);
 
     size = M_FileLength(handle);
 
@@ -106,7 +115,7 @@ static void LoadResponseFile(int argv_index)
     // at the end of the response file, in which case a '\0' will be
     // needed.
 
-    file = malloc(size + 1);
+    file = _AllocateMemory(size + 1);
 
     i = 0;
 
@@ -126,7 +135,7 @@ static void LoadResponseFile(int argv_index)
 
     // Create new arguments list array
 
-    newargv = malloc(sizeof(char *) * MAXARGVS);
+    newargv = _AllocateMemory(sizeof(char *) * MAXARGVS);
     newargc = 0;
     memset(newargv, 0, sizeof(char *) * MAXARGVS);
 
@@ -218,11 +227,11 @@ static void LoadResponseFile(int argv_index)
     // Disabled - Vanilla Doom does not do this.
     // Display arguments
 
-    printf("%d command-line args:\n", myargc);
+    uart_printf("%d command-line args:\n", myargc);
 
     for (k=1; k<myargc; k++)
     {
-        printf("'%s'\n", myargv[k]);
+        uart_printf("'%s'\n", myargv[k]);
     }
 #endif
 #endif

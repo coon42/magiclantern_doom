@@ -72,10 +72,11 @@ static atexit_listentry_t *exit_funcs = NULL;
 
 void I_AtExit(atexit_func_t func, boolean run_on_error)
 {
+    
     atexit_listentry_t *entry;
 
-    entry = malloc(sizeof(*entry));
-
+    entry = _AllocateMemory(sizeof(*entry));
+    uart_printf("I_AtExit: entry (0x%x)\n",entry);
     entry->func = func;
     entry->run_on_error = run_on_error;
     entry->next = exit_funcs;
@@ -109,14 +110,15 @@ static byte *AutoAllocMemory(int *size, int default_ram, int min_ram)
 
         if (default_ram < min_ram)
         {
-            I_Error("Unable to allocate %i MiB of RAM for zone", default_ram);
+            I_Error("Unable to allocate %d MiB of RAM for zone", default_ram);
         }
 
         // Try to allocate the zone memory.
 
         *size = default_ram * 1024 * 1024;
-
-        zonemem = malloc(*size);
+        
+        zonemem = (char *) 0x56500000;
+        uart_printf("AutoAllocMemory: zonemem(0x%x)\n",zonemem);
 
         // Failed to allocate?  Reduce zone size until we reach a size
         // that is acceptable.
@@ -142,22 +144,14 @@ byte *I_ZoneBase (int *size)
     // Specify the heap size, in MiB (default 16).
     //
 
-    p = M_CheckParmWithArgs("-mb", 1);
-
-    if (p > 0)
-    {
-        default_ram = atoi(myargv[p+1]);
-        min_ram = default_ram;
-    }
-    else
-    {
+  
         default_ram = DEFAULT_RAM;
         min_ram = MIN_RAM;
-    }
+    
 
     zonemem = AutoAllocMemory(size, default_ram, min_ram);
 
-    printf("zone memory: %p, %x allocated for zone\n", 
+    uart_printf("zone memory: %x, %x allocated for zone\n", 
            zonemem, *size);
 
     return zonemem;
@@ -165,13 +159,8 @@ byte *I_ZoneBase (int *size)
 
 void I_PrintBanner(char *msg)
 {
-    int i;
-    int spaces = 35 - (strlen(msg) / 2);
-
-    for (i=0; i<spaces; ++i)
-        putchar(' ');
-
-    puts(msg);
+    uart_printf(msg);
+    uart_printf("\n");
 }
 
 void I_PrintDivider(void)
@@ -180,10 +169,10 @@ void I_PrintDivider(void)
 
     for (i=0; i<75; ++i)
     {
-        putchar('=');
+        uart_printf("=");
     }
 
-    putchar('\n');
+  
 }
 
 void I_PrintStartupBanner(char *gamedescription)
@@ -192,7 +181,7 @@ void I_PrintStartupBanner(char *gamedescription)
     I_PrintBanner(gamedescription);
     I_PrintDivider();
     
-    printf(
+    uart_printf(
     " " PACKAGE_NAME " is free software, covered by the GNU General Public\n"
     " License.  There is NO warranty; not even for MERCHANTABILITY or FITNESS\n"
     " FOR A PARTICULAR PURPOSE. You are welcome to change and distribute\n"
@@ -271,7 +260,7 @@ void I_Quit (void)
 
 static int ZenityAvailable(void)
 {
-    return system(ZENITY_BINARY " --help >/dev/null 2>&1") == 0;
+    return 0;
 }
 
 // Escape special characters in the given string so that they can be
@@ -283,7 +272,7 @@ static char *EscapeShellString(char *string)
     char *r, *s;
 
     // In the worst case, every character might be escaped.
-    result = malloc(strlen(string) * 2 + 3);
+    result = _AllocateMemory(strlen(string) * 2 + 3);
     r = result;
 
     // Enclosing quotes.
@@ -335,14 +324,14 @@ static int ZenityErrorBox(char *message)
     escaped_message = EscapeShellString(message);
 
     errorboxpath_size = strlen(ZENITY_BINARY) + strlen(escaped_message) + 19;
-    errorboxpath = malloc(errorboxpath_size);
+    errorboxpath = _AllocateMemory(errorboxpath_size);
     M_snprintf(errorboxpath, errorboxpath_size, "%s --error --text=%s",
                ZENITY_BINARY, escaped_message);
 
-    result = system(errorboxpath);
+    result = 0;
 
-    free(errorboxpath);
-    free(escaped_message);
+    _FreeMemory(errorboxpath);
+    _FreeMemory(escaped_message);
 
     return result;
 }
@@ -365,7 +354,7 @@ void I_Error (char *error, ...)
 
     if (already_quitting)
     {
-        fprintf(stderr, "Warning: recursive call to I_Error detected.\n");
+        uart_printf( "Warning: recursive call to I_Error detected.\n");
 #if ORIGCODE
         exit(-1);
 #endif
@@ -375,19 +364,15 @@ void I_Error (char *error, ...)
         already_quitting = true;
     }
 
-    // Message first.
-    va_start(argptr, error);
-    //fprintf(stderr, "\nError: ");
-    vfprintf(stderr, error, argptr);
-    fprintf(stderr, "\n\n");
-    va_end(argptr);
-    fflush(stderr);
+
+  
 
     // Write a copy of the message into buffer.
     va_start(argptr, error);
     memset(msgbuf, 0, sizeof(msgbuf));
     M_vsnprintf(msgbuf, sizeof(msgbuf), error, argptr);
     va_end(argptr);
+    uart_printf(msgbuf);
 
     // Shutdown. Here might be other errors.
 

@@ -24,7 +24,7 @@
 #include "doomdef.h" 
 #include "doomkeys.h"
 #include "doomstat.h"
-
+#include "dryos.h"
 #include "deh_main.h"
 #include "deh_misc.h"
 
@@ -367,12 +367,12 @@ void G_BuildTiccmd (ticcmd_t* cmd, int maketic)
     { 
 	if (gamekeydown[key_right]) 
 	{
-	    // fprintf(stderr, "strafe right\n");
+	    // uart_printf( "strafe right\n");
 	    side += sidemove[speed]; 
 	}
 	if (gamekeydown[key_left]) 
 	{
-	    //	fprintf(stderr, "strafe left\n");
+	    //	uart_printf( "strafe left\n");
 	    side -= sidemove[speed]; 
 	}
 	if (joyxmove > 0) 
@@ -395,12 +395,12 @@ void G_BuildTiccmd (ticcmd_t* cmd, int maketic)
  
     if (gamekeydown[key_up]) 
     {
-	// fprintf(stderr, "up\n");
+	// uart_printf( "up\n");
 	forward += forwardmove[speed]; 
     }
     if (gamekeydown[key_down]) 
     {
-	// fprintf(stderr, "down\n");
+	// uart_printf( "down\n");
 	forward -= forwardmove[speed]; 
     }
 
@@ -922,7 +922,7 @@ void G_Ticker (void)
 		if (gametic > BACKUPTICS 
 		    && consistancy[i][buf] != cmd->consistancy) 
 		{ 
-		    I_Error ("consistency failure (%i should be %i)",
+		    I_Error ("consistency failure (%d should be %d)",
 			     cmd->consistancy, consistancy[i][buf]); 
 		} 
 		if (players[i].mo) 
@@ -1202,7 +1202,7 @@ void G_DeathMatchSpawnPlayer (int playernum)
 	 
     selections = deathmatch_p - deathmatchstarts; 
     if (selections < 4) 
-	I_Error ("Only %i deathmatch spots, 4 required", selections); 
+	I_Error ("Only %d deathmatch spots, 4 required", selections); 
  
     for (j=0 ; j<20 ; j++) 
     { 
@@ -1526,7 +1526,8 @@ void G_DoLoadGame (void)
 	 
     gameaction = ga_nothing; 
 	 
-    if (f_open (&save_stream, savename, FA_OPEN_EXISTING | FA_READ) != FR_OK)
+     save_stream = FIO_OpenFile(savename,O_RDONLY | O_SYNC);
+    if (!save_stream)
     {
     	return;
     }
@@ -1535,7 +1536,7 @@ void G_DoLoadGame (void)
 
     if (!P_ReadSaveGameHeader())
     {
-        f_close (&save_stream);
+        FIO_CloseFile(save_stream);
         return;
     }
 
@@ -1555,7 +1556,7 @@ void G_DoLoadGame (void)
     if (!P_ReadSaveGameEOF())
 	I_Error ("Bad savegame");
 
-    f_close (&save_stream);
+    FIO_CloseFile(save_stream);
     
     if (setsizeneeded)
     	R_ExecuteSetViewSize ();
@@ -1581,10 +1582,11 @@ G_SaveGame
 }
 
 void G_DoSaveGame (void) 
-{ 
+{ //turtius: implement save game
+    uart_printf("G_DoSaveGame called! not implemented.\n");
+     #if ORIGCODE
     char *savegame_file;
-    char *temp_savegame_file;
-    FRESULT res;
+    char *temp_savegame_file; 
 
     temp_savegame_file = strupr (P_TempSaveGameFile());
     savegame_file = strupr (P_SaveGameFile(savegameslot));
@@ -1593,12 +1595,14 @@ void G_DoSaveGame (void)
     // and then rename it at the end if it was successfully written.
     // This prevents an existing savegame from being overwritten by 
     // a corrupted one, or if a savegame buffer overrun occurs.
-
+    // FIO_WriteFile(save_stream,)
+    
+   
     if (f_open (&save_stream, temp_savegame_file, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK)
     {
     	I_Error ("open err %s\n", temp_savegame_file);
     }
-
+   
     savegame_error = false;
 
     P_WriteSaveGameHeader(savedescription);
@@ -1634,7 +1638,7 @@ void G_DoSaveGame (void)
 
     if (res != FR_OK)
     {
-    	I_Error ("Savegame not renamed, res = %i", res);
+    	I_Error ("Savegame not renamed, res = %d", res);
     }
     
     gameaction = ga_nothing;
@@ -1644,6 +1648,7 @@ void G_DoSaveGame (void)
 
     // draw the pattern into the back screen
     R_FillBackScreen ();	
+     #endif
 } 
  
 
@@ -2082,7 +2087,7 @@ static char *DemoVersionDescription(int version)
     else
     {
         M_snprintf(resultbuf, sizeof(resultbuf),
-                   "%i.%i (unknown)", version / 100, version % 100);
+                   "%d.%d (unknown)", version / 100, version % 100);
         return resultbuf;
     }
 }
@@ -2110,7 +2115,7 @@ void G_DoPlayDemo (void)
     else
     {
         char *message = "Demo is from a different game version!\n"
-                        "(read %i, should be %i)\n"
+                        "(read %d, should be %d)\n"
                         "\n"
                         "*** You may need to upgrade your version "
                             "of Doom to v1.9. ***\n"
@@ -2198,7 +2203,7 @@ boolean G_CheckDemoStatus (void)
         timingdemo = false;
         demoplayback = false;
 
-	I_Error ("timed %i gametics in %i realtics (%f fps)",
+	I_Error ("timed %d gametics in %d realtics (%f fps)",
                  gametic, realtics, fps);
     } 
 	 

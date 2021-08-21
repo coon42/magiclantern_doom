@@ -72,7 +72,7 @@ static void LockCPUAffinity(void)
     {
         // This should never happen...
 
-        fprintf(stderr, "Failed to load kernel32.dll\n");
+        uart_printf( "Failed to load kernel32.dll\n");
         return;
     }
     // Find the SetProcessAffinityMask function.
@@ -87,7 +87,7 @@ static void LockCPUAffinity(void)
     {
         if (!SetAffinity(GetCurrentProcess(), 1))
         {
-            fprintf(stderr, "Failed to set process affinity (%d)\n",
+            uart_printf( "Failed to set process affinity (%d)\n",
                             (int) GetLastError());
         }
     }
@@ -124,7 +124,7 @@ static void LockCPUAffinity(void)
 
 static void LockCPUAffinity(void)
 {
-    fprintf(stderr, 
+    uart_printf( 
     "WARNING: No known way to set processor affinity on this platform.\n"
     "         You may experience crashes due to SDL_mixer.\n");
 }

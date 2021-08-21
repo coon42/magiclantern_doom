@@ -995,7 +995,7 @@ AM_drawFline
     register int ay;
     register int d;
     
-    static int fuck = 0;
+ 
 
     // For debugging only
     if (      fl->a.x < 0 || fl->a.x >= f_w
