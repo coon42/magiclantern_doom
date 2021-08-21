@@ -16,8 +16,73 @@ extern void D_DoomMain(void);
 extern void ml_gui_main_task();
 //event ring buffer
  int inited = 0;
+struct
+{
+    int a;
+    int b;
+    int c;
+    char ssid[0x24];
+    int d;
+    int e;
+    int f;
+    int g;
+    int h;
+    char pass[0x3f];
+} * wifisettings;
+extern int wlanconnect(void *);
 
-static void DUMP_ASM dump_task()
+int wifiConnect(){
+    #if defined(SSID) && defined(PASS) && defined(IP)
+    msleep(1000);
+    wifisettings = _AllocateMemory(0xfc);
+    uart_printf("Allocated 0x%x bytes at 0x%x\n", 0xfc, wifisettings);
+    memset(wifisettings, 0, 0xfc);
+    strcpy(wifisettings->ssid, SSID);
+    strcpy(wifisettings->pass, PASS);
+    char *ip = IP;
+    wifisettings->a = 0;
+    wifisettings->b = 2;
+    wifisettings->c = 2;
+    wifisettings->d = 0;
+    wifisettings->e = 6;
+    wifisettings->f = 4;
+    wifisettings->g = 0;
+    wifisettings->h = 6;
+    // hexDump("A",&wifisettings,0xfc);
+    //Turn lime core on
+    call("NwLimeInit");
+    call("NwLimeOn");
+    call("wlanpoweron");
+    call("wlanup");
+    call("wlanchk");
+    call("wlanipset", ip);
+    if (wlanconnect(wifisettings) != 0)
+    {
+        _FreeMemory(wifisettings);
+        uart_printf("Cant connect to WIFI!\n");
+        return 1;
+    }
+    while (MEM(0x1d90c) == 0xe073631f)
+    {
+        msleep(100);
+    }              //wait for lime core to power on
+    msleep(10000); //wait for the Lime core to init.
+    return 0;
+    #else
+     return 1;
+    #endif
+}
+
+
+
+uint16_t htons(uint16_t v) {
+  return (v >> 8) | (v << 8);
+}
+
+void printError(const char* pErrorMsg) {
+  uart_printf(pErrorMsg);
+}
+extern int drysh_ml_update(int argc, char const *argv[]);
 static void DUMP_ASM task_doom()
 {
 
@@ -34,8 +99,23 @@ static void DUMP_ASM task_doom()
         msleep(1000);
     }
 }
+#if defined(SSID) && defined(PASS) && defined(IP)
+static void DUMP_ASM task_update()
+{
+    while (!bmp_vram_raw())
+    {
+        msleep(100);
+    }
+    drysh_ml_update(0,"");
+    while (1)
+    {
+         uart_printf("Waiting for reboot!\n");
+        msleep(10);
 
+    }
+    
 }
+#endif
 
 static void
 my_task_dispatch_hook(
@@ -76,6 +156,9 @@ void boot_post_init_task(void)
     msleep(1000);
     inited = 1;
     task_create("DOOM", 0x1f, 0x1000, task_doom, 0);
+    #if defined(SSID) && defined(PASS) && defined(IP)
+    task_create("Updater",0x10,0x1000,task_update,0);
+    #endif
 }
 
 /* used by font_draw */
