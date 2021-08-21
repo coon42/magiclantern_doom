@@ -171,6 +171,7 @@ static int *weapon_keys[] = {
 // Set to -1 or +1 to switch to the previous or next weapon.
 
 static int next_weapon = 0;
+int *global_next_weapon = &next_weapon;
 
 // Used for prev/next weapon keys.
 
