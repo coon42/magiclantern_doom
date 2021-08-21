@@ -18,3 +18,7 @@
 
 #define GMT_NFUNCS 0x7
 #define GMT_FUNCTABLE 0xe0805f20
+
+
+#define TIMER 0xD400000C
+#define LARGE_RAM 0x56500000
