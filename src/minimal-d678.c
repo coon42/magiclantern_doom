@@ -9,7 +9,7 @@
 #include "extfunctions.h"
 
 
-
+extern void gui_main_task();
 
 //For DOOM
 extern void D_DoomMain(void);
