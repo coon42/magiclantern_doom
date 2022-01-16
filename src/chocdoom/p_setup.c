@@ -40,6 +40,7 @@
 
 #include "doomstat.h"
 
+
 #include "extfunctions.h"
 void	P_SpawnMapThing (mapthing_t*	mthing);
 

@@ -837,7 +837,6 @@ static  short		cliptop[SCREENWIDTH];
 void R_DrawSprite (vissprite_t* spr)
 {
     drawseg_t*		ds;
-  
     int			x;
     int			r1;
     int			r2;

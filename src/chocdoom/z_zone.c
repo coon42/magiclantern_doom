@@ -286,6 +286,7 @@ Z_Malloc
     mainzone->rover = base->next;	
 	
     base->id = ZONEID;
+    
     return result;
 }
 

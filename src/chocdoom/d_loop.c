@@ -39,6 +39,7 @@
 #include "net_server.h"
 #include "net_sdl.h"
 #include "net_loop.h"
+
 #include "extfunctions.h"
 // The complete set of data for a particular tic.
 
@@ -781,7 +782,7 @@ void TryRunTics (void)
 	    return;
 	}
 
-       I_Sleep(1);
+        I_Sleep(1);
     }
 
     // run the count * ticdup dics

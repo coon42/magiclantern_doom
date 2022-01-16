@@ -24,6 +24,7 @@
 #include "doomdef.h" 
 #include "doomkeys.h"
 #include "doomstat.h"
+
 #include "dryos.h"
 #include "deh_main.h"
 #include "deh_misc.h"
@@ -428,9 +429,10 @@ void G_BuildTiccmd (ticcmd_t* cmd, int maketic)
 
     // buttons
     cmd->chatchar = HU_dequeueChatChar(); 
+ 
     //uart_printf("gamekeydown:0x%x 0x%x\n",gamekeydown[key_fire]);
     if (gamekeydown[key_fire] || mousebuttons[mousebfire] 
-	|| joybuttons[joybfire])
+	|| joybuttons[joybfire]) 
 	cmd->buttons |= BT_ATTACK; 
  
     if (gamekeydown[key_use]
@@ -951,7 +953,7 @@ void G_Ticker (void)
 			S_ResumeSound (); 
 		    break; 
 					 
-		  case BTS_SAVEGAME:
+		  case BTS_SAVEGAME: 
 		    if (!savedescription[0]) 
                     {
                         M_StringCopy(savedescription, "NET GAME",
@@ -1522,7 +1524,7 @@ void G_LoadGame (char* name)
 
 
 void G_DoLoadGame (void) 
-{
+{ 
     int savedleveltime;
 	 
     gameaction = ga_nothing; 
@@ -1530,7 +1532,7 @@ void G_DoLoadGame (void)
      save_stream = FIO_OpenFile(savename,O_RDONLY | O_SYNC);
     if (!save_stream)
     {
-    	return;
+        return;
     }
 
     savegame_error = false;
@@ -1560,10 +1562,10 @@ void G_DoLoadGame (void)
     FIO_CloseFile(save_stream);
     
     if (setsizeneeded)
-    	R_ExecuteSetViewSize ();
+	R_ExecuteSetViewSize ();
     
     // draw the pattern into the back screen
-    R_FillBackScreen (); 
+    R_FillBackScreen ();   
 } 
  
 
@@ -1587,7 +1589,7 @@ void G_DoSaveGame (void)
     uart_printf("G_DoSaveGame called! not implemented.\n");
      #if ORIGCODE
     char *savegame_file;
-    char *temp_savegame_file; 
+    char *temp_savegame_file;
 
     temp_savegame_file = strupr (P_TempSaveGameFile());
     savegame_file = strupr (P_SaveGameFile(savegameslot));
@@ -1596,14 +1598,14 @@ void G_DoSaveGame (void)
     // and then rename it at the end if it was successfully written.
     // This prevents an existing savegame from being overwritten by 
     // a corrupted one, or if a savegame buffer overrun occurs.
+
     // FIO_WriteFile(save_stream,)
-    
-   
+
     if (f_open (&save_stream, temp_savegame_file, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK)
     {
     	I_Error ("open err %s\n", temp_savegame_file);
     }
-   
+
     savegame_error = false;
 
     P_WriteSaveGameHeader(savedescription);
@@ -1642,7 +1644,7 @@ void G_DoSaveGame (void)
     	I_Error ("Savegame not renamed, res = %d", res);
     }
     
-    gameaction = ga_nothing;
+    gameaction = ga_nothing; 
     M_StringCopy(savedescription, "", sizeof(savedescription));
 
     players[consoleplayer].message = DEH_String(GGSAVED);

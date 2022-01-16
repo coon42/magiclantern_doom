@@ -28,6 +28,7 @@
 
 int key_right = KEY_RIGHTARROW;
 int key_left = KEY_LEFTARROW;
+
 int key_up = KEY_UPARROW;
 int key_down = KEY_DOWNARROW; 
 int key_strafeleft = KEY_STRAFE_L;

@@ -164,50 +164,48 @@ P_GiveWeapon
 {
     boolean	gaveammo;
     boolean	gaveweapon;
-
-    if (netgame && (deathmatch!=2) && !dropped )
-	{
-		// leave placed weapons forever on net games
-		if (player->weaponowned[weapon])
-			return false;
-
-		player->bonuscount += BONUSADD;
-		player->weaponowned[weapon] = true;
 	
-		if (deathmatch)
-			P_GiveAmmo (player, weaponinfo[weapon].ammo, 5);
-		else
-			P_GiveAmmo (player, weaponinfo[weapon].ammo, 2);
-		player->pendingweapon = weapon;
+    if (netgame
+	&& (deathmatch!=2)
+	 && !dropped )
+    {
+	// leave placed weapons forever on net games
+	if (player->weaponowned[weapon])
+	    return false;
 
-		if (player == &players[consoleplayer])
-			S_StartSound (NULL, sfx_wpnup);
-		return false;
+	player->bonuscount += BONUSADD;
+	player->weaponowned[weapon] = true;
+
+	if (deathmatch)
+	    P_GiveAmmo (player, weaponinfo[weapon].ammo, 5);
+	else
+	    P_GiveAmmo (player, weaponinfo[weapon].ammo, 2);
+	player->pendingweapon = weapon;
+
+	if (player == &players[consoleplayer])
+	    S_StartSound (NULL, sfx_wpnup);
+	return false;
     }
 	
     if (weaponinfo[weapon].ammo != am_noammo)
     {
-		// give one clip with a dropped weapon,
-		// two clips with a found weapon
-		if (dropped)
-			gaveammo = P_GiveAmmo (player, weaponinfo[weapon].ammo, 1);
-		else
-			gaveammo = P_GiveAmmo (player, weaponinfo[weapon].ammo, 2);
+	// give one clip with a dropped weapon,
+	// two clips with a found weapon
+	if (dropped)
+	    gaveammo = P_GiveAmmo (player, weaponinfo[weapon].ammo, 1);
+	else
+	    gaveammo = P_GiveAmmo (player, weaponinfo[weapon].ammo, 2);
     }
     else
-    {
-    	gaveammo = false;
-    }
+	gaveammo = false;
 	
     if (player->weaponowned[weapon])
-    {
-    	gaveweapon = false;
-    }
+	gaveweapon = false;
     else
     {
-		gaveweapon = true;
-		player->weaponowned[weapon] = true;
-		player->pendingweapon = weapon;
+	gaveweapon = true;
+	player->weaponowned[weapon] = true;
+	player->pendingweapon = weapon;
     }
 	
     return (gaveweapon || gaveammo);

@@ -1,4 +1,4 @@
-// Emacs style mode select   -*- C++ -*-
+// Emacs style mode select   -*- C++ -*- 
 //-----------------------------------------------------------------------------
 //
 // $Id:$
@@ -23,7 +23,7 @@
 //-----------------------------------------------------------------------------
 
 static const char
-    rcsid[] = "$Id: i_x.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
+rcsid[] = "$Id: i_x.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
 
 #include "config.h"
 #include "v_video.h"
@@ -92,11 +92,12 @@ extern int *global_next_weapon;
 
 int vanilla_keyboard_mapping = true;
 
+
 typedef struct
 {
-    byte r;
-    byte g;
-    byte b;
+	byte r;
+	byte g;
+	byte b;
 } col_t;
 
 // Palette converted to RGB32
@@ -281,16 +282,17 @@ void ml_gui_main_task()
         f(event);
     }
 }
-void I_GetEvent(void)
+
+void I_GetEvent (void)
 {
 }
 
-void I_StartTic(void)
+void I_StartTic (void)
 {
-    I_GetEvent();
+	I_GetEvent();
 }
 
-void I_UpdateNoBlit(void)
+void I_UpdateNoBlit (void)
 {
 }
 
@@ -343,15 +345,15 @@ void I_FinishUpdate(void)
 //
 // I_ReadScreen
 //
-void I_ReadScreen(byte *scr)
+void I_ReadScreen (byte* scr)
 {
-    memcpy(scr, I_VideoBuffer, SCREENWIDTH * SCREENHEIGHT);
+    memcpy (scr, I_VideoBuffer, SCREENWIDTH * SCREENHEIGHT);
 }
 
 //
 // I_SetPalette
 //
-void I_SetPalette(byte *palette)
+void I_SetPalette (byte* palette)
 {
     int i;
     col_t *c;
@@ -370,7 +372,7 @@ void I_SetPalette(byte *palette)
 
 // Given an RGB value, find the closest matching palette index.
 
-int I_GetPaletteIndex(int r, int g, int b)
+int I_GetPaletteIndex (int r, int g, int b)
 {
     int best, best_diff, diff;
     int i;
@@ -402,38 +404,38 @@ int I_GetPaletteIndex(int r, int g, int b)
     return best;
 }
 
-void I_BeginRead(void)
+void I_BeginRead (void)
 {
 }
 
-void I_EndRead(void)
+void I_EndRead (void)
 {
 }
 
-void I_SetWindowTitle(char *title)
+void I_SetWindowTitle (char *title)
 {
 }
 
-void I_GraphicsCheckCommandLine(void)
+void I_GraphicsCheckCommandLine (void)
 {
 }
 
-void I_SetGrabMouseCallback(grabmouse_callback_t func)
+void I_SetGrabMouseCallback (grabmouse_callback_t func)
 {
 }
 
-void I_EnableLoadingDisk(void)
+void I_EnableLoadingDisk (void)
 {
 }
 
-void I_BindVideoVariables(void)
+void I_BindVideoVariables (void)
 {
 }
 
-void I_DisplayFPSDots(boolean dots_on)
+void I_DisplayFPSDots (boolean dots_on)
 {
 }
 
-void I_CheckIsScreensaver(void)
+void I_CheckIsScreensaver (void)
 {
 }

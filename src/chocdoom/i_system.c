@@ -50,6 +50,7 @@
 
 #include "w_wad.h"
 #include "z_zone.h"
+
 #include "dryos.h"
 #ifdef __MACOSX__
 #include <CoreFoundation/CFUserNotification.h>
@@ -72,10 +73,10 @@ static atexit_listentry_t *exit_funcs = NULL;
 
 void I_AtExit(atexit_func_t func, boolean run_on_error)
 {
-    
     atexit_listentry_t *entry;
 
     entry = _AllocateMemory(sizeof(*entry));
+
     uart_printf("I_AtExit: entry (0x%x)\n",entry);
     entry->func = func;
     entry->run_on_error = run_on_error;
@@ -116,7 +117,7 @@ static byte *AutoAllocMemory(int *size, int default_ram, int min_ram)
         // Try to allocate the zone memory.
 
         *size = default_ram * 1024 * 1024;
-        
+
         zonemem = (char *) LARGE_RAM;
         uart_printf("AutoAllocMemory: zonemem(0x%x)\n",zonemem);
 
@@ -144,10 +145,8 @@ byte *I_ZoneBase (int *size)
     // Specify the heap size, in MiB (default 16).
     //
 
-  
         default_ram = DEFAULT_RAM;
         min_ram = MIN_RAM;
-    
 
     zonemem = AutoAllocMemory(size, default_ram, min_ram);
 
@@ -172,7 +171,6 @@ void I_PrintDivider(void)
         uart_printf("=");
     }
 
-  
 }
 
 void I_PrintStartupBanner(char *gamedescription)
@@ -364,8 +362,6 @@ void I_Error (char *error, ...)
         already_quitting = true;
     }
 
-
-  
 
     // Write a copy of the message into buffer.
     va_start(argptr, error);

@@ -24,7 +24,6 @@
 #include "dryos.h"
 
 
-
 #include "doomdef.h"
 #include "doomkeys.h"
 #include "dstrings.h"
@@ -62,6 +61,7 @@
 #include "sounds.h"
 
 #include "m_menu.h"
+
 
 extern patch_t*		hu_font[HU_FONTSIZE];
 extern boolean		message_dontfuckwithme;

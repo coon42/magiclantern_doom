@@ -17,7 +17,6 @@
 //
 
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h> 
@@ -86,7 +85,7 @@ static byte saveg_read8(void)
 {
     byte result;
     unsigned long count;
-          
+
     if (FIO_ReadFile(save_stream,&result,1))
     {
         if (!savegame_error)
@@ -104,7 +103,7 @@ static byte saveg_read8(void)
 static void saveg_write8(byte value)
 {
 	unsigned long count;
-     
+
 	if (FIO_WriteFile(save_stream,&value,1))
     {
         if (!savegame_error)
@@ -1416,7 +1415,7 @@ boolean P_ReadSaveGameHeader(void)
     gamemap = saveg_read8();
 
     for (i=0 ; i<MAXPLAYERS ; i++) 
-    	playeringame[i] = saveg_read8();
+	playeringame[i] = saveg_read8();
 
     // get the times 
     a = saveg_read8();
@@ -1458,10 +1457,10 @@ void P_ArchivePlayers (void)
 		
     for (i=0 ; i<MAXPLAYERS ; i++)
     {
-    	if (!playeringame[i])
-    		continue;
+	if (!playeringame[i])
+	    continue;
 	
-    	saveg_write_pad();
+	saveg_write_pad();
 
         saveg_write_player_t(&players[i]);
     }
@@ -1478,17 +1477,17 @@ void P_UnArchivePlayers (void)
 	
     for (i=0 ; i<MAXPLAYERS ; i++)
     {
-		if (!playeringame[i])
-			continue;
-
-		saveg_read_pad();
+	if (!playeringame[i])
+	    continue;
 	
-		saveg_read_player_t(&players[i]);
+	saveg_read_pad();
 
-		// will be set when unarc thinker
-		players[i].mo = NULL;
-		players[i].message = NULL;
-		players[i].attacker = NULL;
+        saveg_read_player_t(&players[i]);
+	
+	// will be set when unarc thinker
+	players[i].mo = NULL;	
+	players[i].message = NULL;
+	players[i].attacker = NULL;
     }
 }
 
@@ -1507,35 +1506,35 @@ void P_ArchiveWorld (void)
     // do sectors
     for (i=0, sec = sectors ; i<numsectors ; i++,sec++)
     {
-		saveg_write16(sec->floorheight >> FRACBITS);
-		saveg_write16(sec->ceilingheight >> FRACBITS);
-		saveg_write16(sec->floorpic);
-		saveg_write16(sec->ceilingpic);
-		saveg_write16(sec->lightlevel);
-		saveg_write16(sec->special);		// needed?
-		saveg_write16(sec->tag);		// needed?
+	saveg_write16(sec->floorheight >> FRACBITS);
+	saveg_write16(sec->ceilingheight >> FRACBITS);
+	saveg_write16(sec->floorpic);
+	saveg_write16(sec->ceilingpic);
+	saveg_write16(sec->lightlevel);
+	saveg_write16(sec->special);		// needed?
+	saveg_write16(sec->tag);		// needed?
     }
 
     
     // do lines
     for (i=0, li = lines ; i<numlines ; i++,li++)
     {
-		saveg_write16(li->flags);
-		saveg_write16(li->special);
-		saveg_write16(li->tag);
-		for (j=0 ; j<2 ; j++)
-		{
-			if (li->sidenum[j] == -1)
-			continue;
+	saveg_write16(li->flags);
+	saveg_write16(li->special);
+	saveg_write16(li->tag);
+	for (j=0 ; j<2 ; j++)
+	{
+	    if (li->sidenum[j] == -1)
+		continue;
+	    
+	    si = &sides[li->sidenum[j]];
 
-			si = &sides[li->sidenum[j]];
-
-			saveg_write16(si->textureoffset >> FRACBITS);
-			saveg_write16(si->rowoffset >> FRACBITS);
-			saveg_write16(si->toptexture);
-			saveg_write16(si->bottomtexture);
-			saveg_write16(si->midtexture);
-		}
+	    saveg_write16(si->textureoffset >> FRACBITS);
+	    saveg_write16(si->rowoffset >> FRACBITS);
+	    saveg_write16(si->toptexture);
+	    saveg_write16(si->bottomtexture);
+	    saveg_write16(si->midtexture);	
+	}
     }
 }
 
@@ -1555,34 +1554,34 @@ void P_UnArchiveWorld (void)
     // do sectors
     for (i=0, sec = sectors ; i<numsectors ; i++,sec++)
     {
-		sec->floorheight = saveg_read16() << FRACBITS;
-		sec->ceilingheight = saveg_read16() << FRACBITS;
-		sec->floorpic = saveg_read16();
-		sec->ceilingpic = saveg_read16();
-		sec->lightlevel = saveg_read16();
-		sec->special = saveg_read16();		// needed?
-		sec->tag = saveg_read16();		// needed?
-		sec->specialdata = 0;
-		sec->soundtarget = 0;
+	sec->floorheight = saveg_read16() << FRACBITS;
+	sec->ceilingheight = saveg_read16() << FRACBITS;
+	sec->floorpic = saveg_read16();
+	sec->ceilingpic = saveg_read16();
+	sec->lightlevel = saveg_read16();
+	sec->special = saveg_read16();		// needed?
+	sec->tag = saveg_read16();		// needed?
+	sec->specialdata = 0;
+	sec->soundtarget = 0;
     }
     
     // do lines
     for (i=0, li = lines ; i<numlines ; i++,li++)
     {
-		li->flags = saveg_read16();
-		li->special = saveg_read16();
-		li->tag = saveg_read16();
-		for (j=0 ; j<2 ; j++)
-		{
-			if (li->sidenum[j] == -1)
-			continue;
-			si = &sides[li->sidenum[j]];
-			si->textureoffset = saveg_read16() << FRACBITS;
-			si->rowoffset = saveg_read16() << FRACBITS;
-			si->toptexture = saveg_read16();
-			si->bottomtexture = saveg_read16();
-			si->midtexture = saveg_read16();
-		}
+	li->flags = saveg_read16();
+	li->special = saveg_read16();
+	li->tag = saveg_read16();
+	for (j=0 ; j<2 ; j++)
+	{
+	    if (li->sidenum[j] == -1)
+		continue;
+	    si = &sides[li->sidenum[j]];
+	    si->textureoffset = saveg_read16() << FRACBITS;
+	    si->rowoffset = saveg_read16() << FRACBITS;
+	    si->toptexture = saveg_read16();
+	    si->bottomtexture = saveg_read16();
+	    si->midtexture = saveg_read16();
+	}
     }
 }
 
@@ -1611,16 +1610,16 @@ void P_ArchiveThinkers (void)
     // save off the current thinkers
     for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
     {
-		if (th->function.acp1 == (actionf_p1)P_MobjThinker)
-		{
-			saveg_write8(tc_mobj);
-			saveg_write_pad();
-			saveg_write_mobj_t((mobj_t *) th);
+	if (th->function.acp1 == (actionf_p1)P_MobjThinker)
+	{
+            saveg_write8(tc_mobj);
+	    saveg_write_pad();
+            saveg_write_mobj_t((mobj_t *) th);
 
-			continue;
-		}
-
-		// I_Error ("P_ArchiveThinkers: Unknown thinker function");
+	    continue;
+	}
+		
+	// I_Error ("P_ArchiveThinkers: Unknown thinker function");
     }
 
     // add a terminating marker

@@ -123,7 +123,7 @@ size_t W_StdC_Read(wad_file_t *wad, unsigned int offset,
     return result;
 #else
     stdc_wad_file_t *stdc_wad;
-      stdc_wad = (stdc_wad_file_t *) wad;
+    stdc_wad = (stdc_wad_file_t *) wad;
     size_t offsetfile = FIO_SeekSkipFile(stdc_wad->fstream,offset,SEEK_SET);
     size_t result = FIO_ReadFile(stdc_wad->fstream,buffer,buffer_len);
    
